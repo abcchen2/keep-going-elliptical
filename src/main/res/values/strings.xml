@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">加油椭圆机</string>
+    <string name="searching_device">搜索设备中…</string>
+    <string name="connect">连接</string>
+    <string name="disconnect">断开</string>
+    <string name="resistance">阻力</string>
+    <string name="cadence">踏频</string>
+    <string name="calories">热量</string>
+    <string name="duration">运动时间</string>
+    <string name="distance">距离</string>
+    <string name="power">功率</string>
+    <string name="start">开始</string>
+    <string name="pause">暂停</string>
+    <string name="stop">停止</string>
+    <string name="sync_to_mi_fit">同步到小米运动健康</string>
+    <string name="no_device_found">未找到设备，请确认椭圆机已开机</string>
+    <string name="bluetooth_permission_required">需要蓝牙权限才能连接椭圆机</string>
+    <string name="location_permission_required">需要位置权限来扫描蓝牙设备</string>
+    <string name="connected">已连接</string>
+    <string name="disconnected">已断开</string>
+    <string name="connecting">连接中…</string>
+</resources>

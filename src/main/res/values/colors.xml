@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mobi_primary">#00A86B</color>
+    <color name="mobi_primary_dark">#007A4D</color>
+    <color name="mobi_secondary">#FF6B35</color>
+    <color name="mobi_secondary_dark">#CC561B</color>
+    <color name="white">#FFFFFF</color>
+</resources>

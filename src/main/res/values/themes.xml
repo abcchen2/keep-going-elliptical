@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base theme for the app (used by the Activity) -->
+    <!-- The Compose UI uses its own theme (MobiEllipticalTheme) -->
+    <style name="Theme.MobiElliptical" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/mobi_primary</item>
+    </style>
+</resources>
