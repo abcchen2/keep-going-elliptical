@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Build and lint after spec task",
+      "trigger": "PostTaskExec",
+      "description": "After each spec task is marked complete, run assembleDebug + lintDebug so a task is never closed on a broken build.",
+      "action": {
+        "type": "command",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1",
+        "timeout": 600
+      }
+    }
+  ]
+}

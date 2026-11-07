@@ -1,0 +1,21 @@
+# Implementation Plan — Mobi resistance control
+
+- [x] 1. Reverse-engineer the official apps
+  - Decompile 3.5.9.1 and 4.5.17 with jadx; map detection order, UUIDs and resistance commands for all four protocols; write `docs/PROTOCOL.md`.
+  - _Requirements: 2.1, 3.1, 3.2, 3.3, 3.4_
+- [x] 2. Serialized GATT layer (`GattLink`)
+  - _Requirements: 1.2, 3.5_
+- [x] 3. Protocol detection and manual override
+  - _Requirements: 2.1, 2.2, 2.3_
+- [x] 4. 2.0 box: unlock + `02 LL VV`, 8806 range, 8812 echo, start/stop gated by 8801 bit 1
+  - _Requirements: 3.1, 3.6_
+- [x] 5. 1.0 box: frame-echo write, queued level until first frame, per-model table
+  - _Requirements: 3.2, 3.6_
+- [x] 6. HuanTong: weight frame + 1 Hz resistance heartbeat
+  - _Requirements: 3.3_
+- [x] 7. FTMS: request control, 1-byte ×10 resistance, 2AD6 range, Mobi 2-byte flags parser
+  - _Requirements: 3.4, 3.6_
+- [x] 8. Controller: scan, connect, debounce, reconnect + restore level
+  - _Requirements: 1.1, 1.3, 1.4, 3.7_
+- [x] 9. Diagnostics: log, copy, raw hex write
+  - _Requirements: 4.1, 4.2_

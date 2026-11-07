@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Keep protocol docs in sync",
+      "trigger": "PostFileSave",
+      "description": "When protocol code changes, make sure the Chinese and English protocol docs still describe the exact bytes.",
+      "matcher": "protocol[\\\\/][^\\\\/]+\\.kt$",
+      "action": {
+        "type": "agent",
+        "prompt": "A protocol file under app/src/main/java/com/keepgoing/elliptical/protocol/ was saved. Compare every byte format, UUID and detection rule in the saved file with docs/PROTOCOL.md and docs/PROTOCOL.en.md. If anything changed (a command frame, checksum, characteristic, detection order, resistance table), update both documents so they match the code, and keep the decompiled-source reference for each fact. If nothing protocol-related changed, do nothing."
+      }
+    }
+  ]
+}

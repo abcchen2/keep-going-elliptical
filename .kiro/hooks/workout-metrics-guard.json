@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Workout metrics sanity check",
+      "trigger": "PostFileSave",
+      "description": "Guards against the calorie/distance over-counting bugs of the owner's earlier app.",
+      "matcher": "workout[\\\\/][^\\\\/]+\\.kt$",
+      "action": {
+        "type": "agent",
+        "prompt": "A workout file was saved. Re-check it against .kiro/steering/workout-metrics.md: accumulation only in the 1 Hz tick with real elapsed time (max 2 s), nothing accumulated in BLE callbacks, 5 s cadence staleness, machine totals added only as DeviceCounter increments, the official new formula divided by 3600, 0 kcal at 0 rpm, and the 20 kcal/min cap. Report any violation and fix it."
+      }
+    }
+  ]
+}

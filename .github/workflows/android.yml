@@ -1,0 +1,46 @@
+name: Android build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and lint
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug lintDebug --console=plain
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk keep-going-elliptical-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keep-going-elliptical-apk
+          path: keep-going-elliptical-debug.apk
+
+      # Pushing a tag like v1.0.0 publishes the APK as a GitHub Release
+      # (this is the "working app" download link for judges).
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: keep-going-elliptical-debug.apk
+          generate_release_notes: true
