@@ -1,6 +1,9 @@
 package com.keepgoing.elliptical.protocol
 
+import android.content.Context
 import android.os.SystemClock
+import androidx.annotation.StringRes
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.ble.BleUuids
 import com.keepgoing.elliptical.ble.GattLink
 import com.keepgoing.elliptical.ble.u
@@ -13,6 +16,8 @@ import java.util.UUID
 
 /** What a protocol implementation may use. Everything runs on the main thread. */
 interface ProtocolHost {
+    /** Application context, used for localised strings. */
+    val context: Context
     val link: GattLink
     val deviceName: String
     val settings: AppSettings
@@ -46,11 +51,16 @@ abstract class MachineProtocol(protected val host: ProtocolHost) {
 
     protected fun log(line: String) = host.log(line)
 
+    /** Localised string (follows the system language). */
+    protected fun s(@StringRes id: Int, vararg args: Any): String = host.context.getString(id, *args)
+
+    protected fun logRes(@StringRes id: Int, vararg args: Any) = log(s(id, *args))
+
     /** Resistance range from the official tables, unless the user set an override. */
-    protected fun applyRange(min: Int, max: Int, source: String, mode: Int? = null) {
+    protected fun applyRange(min: Int, max: Int, @StringRes source: Int, mode: Int? = null) {
         val override = host.settings.maxResistanceOverride
         val realMax = if (override > 0) override else max
-        val realSource = if (override > 0) "手动设置" else source
+        val realSource = if (override > 0) R.string.range_manual else source
         val newMin = min.coerceAtLeast(1)
         val newMax = realMax.coerceAtLeast(newMin)
         host.update {
@@ -62,7 +72,11 @@ abstract class MachineProtocol(protected val host: ProtocolHost) {
                 targetResistance = it.targetResistance.coerceIn(newMin, newMax),
             )
         }
-        log("阻力范围 ${min.coerceAtLeast(1)}..$realMax ($realSource)" + (mode?.let { ", 模式=${ResistanceTables.modeText(it)}" } ?: ""))
+        if (mode == null) {
+            logRes(R.string.log_range, newMin, newMax, s(realSource))
+        } else {
+            logRes(R.string.log_range_mode, newMin, newMax, s(realSource), s(ResistanceTables.modeText(mode)))
+        }
     }
 
     protected fun reportResistance(level: Int) {
@@ -91,7 +105,7 @@ abstract class MachineProtocol(protected val host: ProtocolHost) {
             val ch = link.characteristic(BleUuids.SERVICE_DEVICE_INFO, id) ?: continue
             link.read(ch) { v ->
                 val text = v?.toString(Charsets.UTF_8)?.trim()?.trimEnd('\u0000') ?: return@read
-                log("${if (id == BleUuids.CHAR_MODEL_NUMBER) "型号" else "固件"}: $text")
+                logRes(if (id == BleUuids.CHAR_MODEL_NUMBER) R.string.log_model else R.string.log_firmware, text)
                 host.update {
                     if (id == BleUuids.CHAR_MODEL_NUMBER) it.copy(modelNumber = text) else it.copy(firmware = text)
                 }

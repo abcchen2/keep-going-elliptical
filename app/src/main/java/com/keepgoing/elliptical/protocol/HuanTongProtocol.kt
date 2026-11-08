@@ -1,9 +1,11 @@
 package com.keepgoing.elliptical.protocol
 
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.ble.BleUuids
 import com.keepgoing.elliptical.ble.bytesOf
 import com.keepgoing.elliptical.ble.u
 import com.keepgoing.elliptical.model.ProtocolKind
+import com.keepgoing.elliptical.model.UiText
 import java.util.UUID
 
 /**
@@ -34,20 +36,20 @@ class HuanTongProtocol(host: ProtocolHost) : MachineProtocol(host) {
     override fun start() {
         val isElliptical = host.deviceName.startsWith("MOBI-E")
         host.update {
-            it.copy(machineDescription = if (isElliptical) "椭圆机 (环通主板)" else "单车 (环通主板)")
+            it.copy(machineDescription = UiText(if (isElliptical) R.string.ht_desc_elliptical else R.string.ht_desc_bike))
         }
         reportMachineType(if (isElliptical) ResistanceTables.TYPE_ELLIPTICAL else ResistanceTables.TYPE_BIKE, null)
         // The board never reports the level back; the official app marks it write-only
         // and uses its default range of 1..24.
-        applyRange(1, 24, "官方默认 (环通无阻力回读)", mode = 1)
+        applyRange(1, 24, R.string.src_ht_default, mode = 1)
 
         val notify = link.characteristic(BleUuids.HT_SERVICE, BleUuids.HT_NOTIFY)
         if (notify == null) {
-            log("没有 FFF1 通知特征，直接开始心跳")
+            logRes(R.string.log_ht_no_fff1)
             startSession()
         } else {
             link.enableNotify(notify) { ok ->
-                if (!ok) log("FFF1 订阅失败，仍然开始心跳")
+                if (!ok) logRes(R.string.log_ht_fff1_failed)
                 startSession()
             }
         }
@@ -59,13 +61,13 @@ class HuanTongProtocol(host: ProtocolHost) : MachineProtocol(host) {
         val ch = link.characteristic(BleUuids.HT_SERVICE, BleUuids.HT_WRITE)
             ?: link.findCharacteristic(BleUuids.HT_WRITE)
         if (ch == null) {
-            log("没有 FFF2 写特征，无法控制阻力")
+            logRes(R.string.log_ht_no_fff2)
             return
         }
         val kg = host.settings.userWeightKg
         val lb = (kg * 2.2046226).toInt() and 0xFF
         val weightFrame = bytesOf(0x40, 0x00, lb, kg and 0xFF, (0x40 + lb + kg) and 0xFF)
-        log("发送体重 ${kg}kg")
+        logRes(R.string.log_ht_weight, kg)
         link.write(ch, weightFrame) {
             host.update { s -> s.copy(controlReady = true) }
             scheduleHeartbeat(0)

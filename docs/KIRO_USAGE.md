@@ -64,6 +64,17 @@ sessions but make sure an edit to `V2Protocol.kt` cannot forget the unlock.
 | Build and lint after spec task | PostTaskExec | Runs `scripts/check.ps1` (finds a JDK 17, `assembleDebug lintDebug`) so a spec task is never closed on a broken build. |
 | Keep protocol docs in sync | PostFileSave on `protocol/*.kt` | Agent re-checks bytes/UUIDs against `docs/PROTOCOL.md` and `docs/PROTOCOL.en.md` and updates both. |
 | Workout metrics sanity check | PostFileSave on `workout/*.kt` | Agent re-validates the accumulation rules. |
+| Keep English and Chinese strings in sync | PostFileSave on `res/values*/strings.xml` | Agent checks that both languages have every key with matching format arguments, and that no Kotlin file hard-codes UI text. |
+
+### Bilingual UI
+
+The app follows the system language: English (`res/values`) and Simplified Chinese (`res/values-zh`),
+233 strings each, including log lines. Kiro moved every hard-coded string into resources, added the
+steering rule in `product.md`, and added the sync hook above. Text kept in state (machine description,
+range source, errors) is stored as a resource id or `UiText`, so it follows a language change. Both
+languages were checked on an Android 16 emulator using per-app locales
+(`adb shell cmd locale set-app-locales`), including switching the language in the middle of a demo workout.
+That check caught one bug: a description string resolved too early stayed in the old language.
 
 ## 5. Verification
 

@@ -1,5 +1,9 @@
 package com.keepgoing.elliptical.protocol
 
+import androidx.annotation.StringRes
+import com.keepgoing.elliptical.R
+import com.keepgoing.elliptical.model.UiText
+
 /**
  * Resistance capabilities hard-coded in the official app, keyed by the
  * device type / sub type the machine reports (8802 for 2.0 boxes, 0xAB frames for 1.0 boxes).
@@ -58,27 +62,39 @@ object ResistanceTables {
         else -> 2
     }
 
-    fun typeName(type: Int): String = when (type) {
-        TYPE_ROWING -> "划船机"
-        TYPE_BIKE -> "动感单车"
-        TYPE_ELLIPTICAL -> "椭圆机"
-        TYPE_TREADMILL -> "跑步机"
-        else -> "未知类型($type)"
+    fun typeName(type: Int): UiText = when (type) {
+        TYPE_ROWING -> UiText(R.string.type_rowing)
+        TYPE_BIKE -> UiText(R.string.type_bike)
+        TYPE_ELLIPTICAL -> UiText(R.string.type_elliptical)
+        TYPE_TREADMILL -> UiText(R.string.type_treadmill)
+        else -> UiText(R.string.type_unknown, type)
     }
 
     /** Elliptical model names from EnumDeviceKt.getDeviceSubtypeName(). */
-    fun ellipticalModel(subType: Int): String = when (subType) {
+    fun ellipticalModel(subType: Int): String? = when (subType) {
         18 -> "MEH3205"
         19 -> "MEH3204"
         20 -> "MEH3201"
-        else -> "子类型 $subType"
+        else -> null
     }
 
-    fun modeText(mode: Int): String = when (mode) {
-        0 -> "官方标记为不可读写"
-        1 -> "只写"
-        2 -> "只读"
-        3 -> "可读可写"
-        else -> "未知"
+    /** "Elliptical MEH3204" / "Spin bike, sub type 21", localised. */
+    fun describe(type: Int, subType: Int): UiText {
+        val name = typeName(type)
+        val model = if (type == TYPE_ELLIPTICAL) ellipticalModel(subType) else null
+        return if (model != null) {
+            UiText(R.string.machine_desc_model, name, model)
+        } else {
+            UiText(R.string.machine_desc_subtype, name, subType)
+        }
+    }
+
+    @StringRes
+    fun modeText(mode: Int): Int = when (mode) {
+        0 -> R.string.mode_0
+        1 -> R.string.mode_1
+        2 -> R.string.mode_2
+        3 -> R.string.mode_3
+        else -> R.string.mode_unknown
     }
 }

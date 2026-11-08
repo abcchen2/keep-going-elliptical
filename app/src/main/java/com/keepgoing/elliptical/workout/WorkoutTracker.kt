@@ -1,8 +1,11 @@
 package com.keepgoing.elliptical.workout
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import androidx.annotation.StringRes
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.model.AppSettings
 import com.keepgoing.elliptical.model.ConnectionPhase
 import com.keepgoing.elliptical.model.DataSource
@@ -32,6 +35,7 @@ import org.json.JSONObject
  *  - The formula-based burn rate is capped at [CalorieModel.MAX_KCAL_PER_MIN].
  */
 class WorkoutTracker(
+    private val context: Context,
     private val settings: AppSettings,
     private val machine: () -> MachineState,
     private val sendToMachine: (WorkoutCommand) -> Unit,
@@ -80,6 +84,8 @@ class WorkoutTracker(
         main.postDelayed(tickRunnable, TICK_MS)
     }
 
+    private fun logRes(@StringRes id: Int, vararg args: Any) = log(context.getString(id, *args))
+
     // ------------------------------------------------------------------ user actions
 
     fun start() {
@@ -88,7 +94,7 @@ class WorkoutTracker(
         if (st == WorkoutStatus.RUNNING) return
         resetAccumulators()
         _stats.value = WorkoutStats(status = WorkoutStatus.RUNNING, startedAt = System.currentTimeMillis())
-        log("锻炼开始")
+        logRes(R.string.log_workout_started)
         sendToMachine(WorkoutCommand.START)
     }
 
@@ -96,7 +102,7 @@ class WorkoutTracker(
         val st = _stats.value.status
         if (st != WorkoutStatus.RUNNING && st != WorkoutStatus.AUTO_PAUSED) return
         setStatus(WorkoutStatus.PAUSED)
-        log("锻炼暂停")
+        logRes(R.string.log_workout_paused)
         sendToMachine(WorkoutCommand.PAUSE)
     }
 
@@ -105,7 +111,7 @@ class WorkoutTracker(
         if (st != WorkoutStatus.PAUSED && st != WorkoutStatus.AUTO_PAUSED) return
         idleMs = 0
         setStatus(WorkoutStatus.RUNNING)
-        log("锻炼继续")
+        logRes(R.string.log_workout_resumed)
         sendToMachine(WorkoutCommand.START)
     }
 
@@ -114,7 +120,7 @@ class WorkoutTracker(
         if (st == WorkoutStatus.IDLE || st == WorkoutStatus.FINISHED) return
         publish(WorkoutStatus.FINISHED, machine())
         val s = _stats.value
-        log("锻炼结束: ${s.activeSec}s, %.0f m, %.1f kcal".format(s.distanceM, s.calories))
+        logRes(R.string.log_workout_finished, s.activeSec, s.distanceM, s.calories)
         sendToMachine(WorkoutCommand.STOP)
         if (s.activeSec >= MIN_RECORD_SEC) saveRecord(s)
     }
@@ -152,17 +158,17 @@ class WorkoutTracker(
 
         when (status) {
             WorkoutStatus.IDLE -> if (rpmFresh) {
-                log("检测到踩动，自动开始计时")
+                logRes(R.string.log_auto_start)
                 start()
             }
             WorkoutStatus.AUTO_PAUSED -> if (rpmFresh) {
-                log("重新踩动，继续计时")
+                logRes(R.string.log_auto_resume)
                 idleMs = 0
                 setStatus(WorkoutStatus.RUNNING)
             }
             WorkoutStatus.RUNNING -> {
                 if (!connected) {
-                    log("设备断开，锻炼自动暂停")
+                    logRes(R.string.log_disconnect_pause)
                     publish(WorkoutStatus.AUTO_PAUSED, m)
                     return
                 }
@@ -170,7 +176,7 @@ class WorkoutTracker(
                 idleMs = if (rpmFresh) 0 else idleMs + dt
                 val limit = settings.autoPauseSec
                 if (limit > 0 && idleMs >= limit * 1000L) {
-                    log("${limit} 秒没有踩动，自动暂停")
+                    logRes(R.string.log_idle_pause, limit)
                     publish(WorkoutStatus.AUTO_PAUSED, m)
                     return
                 }

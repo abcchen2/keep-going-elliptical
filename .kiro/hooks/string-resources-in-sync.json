@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Keep English and Chinese strings in sync",
+      "trigger": "PostFileSave",
+      "description": "When either strings.xml is saved, make sure every translatable key exists in both languages with matching format arguments.",
+      "matcher": "res[\\\\/]values(-zh)?[\\\\/]strings\\.xml$",
+      "action": {
+        "type": "agent",
+        "prompt": "A strings.xml file was saved. Compare app/src/main/res/values/strings.xml (English, default) with app/src/main/res/values-zh/strings.xml (Simplified Chinese). Every string without translatable=\"false\" must exist in both files, in the same order, with the same positional format arguments (%1$d, %2$s, %1$.1f, ...). Add any missing translation (natural, concise Chinese or English matching the existing tone), fix argument mismatches, and keep literal % escaped as %% in strings that take arguments. Also check that no Kotlin file under app/src/main/java hard-codes user-visible Chinese text."
+      }
+    }
+  ]
+}

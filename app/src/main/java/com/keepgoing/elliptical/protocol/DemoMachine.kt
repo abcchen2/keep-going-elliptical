@@ -1,6 +1,8 @@
 package com.keepgoing.elliptical.protocol
 
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.model.ProtocolKind
+import com.keepgoing.elliptical.model.UiText
 import java.util.UUID
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -25,10 +27,10 @@ class DemoMachine(host: ProtocolHost) : MachineProtocol(host) {
     private var released = false
 
     override fun start() {
-        applyRange(1, 24, "演示模式")
+        applyRange(1, 24, R.string.src_demo)
         reportMachineType(ResistanceTables.TYPE_ELLIPTICAL, 19)
-        host.update { it.copy(machineDescription = "模拟椭圆机 (Demo)", controlReady = true, reportedResistance = level) }
-        log("演示模式已启动：模拟踏频、心率和阻力回读，不使用蓝牙")
+        host.update { it.copy(machineDescription = UiText(R.string.demo_desc), controlReady = true, reportedResistance = level) }
+        logRes(R.string.log_demo_started)
         schedule()
     }
 

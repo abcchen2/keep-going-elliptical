@@ -1,29 +1,32 @@
 package com.keepgoing.elliptical.model
 
-enum class ConnectionPhase(val label: String) {
-    IDLE("未连接"),
-    SCANNING("扫描中"),
-    CONNECTING("连接中"),
-    SETTING_UP("初始化设备"),
-    READY("已连接"),
-    RECONNECTING("重新连接中"),
+import androidx.annotation.StringRes
+import com.keepgoing.elliptical.R
+
+enum class ConnectionPhase(@StringRes val labelRes: Int) {
+    IDLE(R.string.phase_idle),
+    SCANNING(R.string.phase_scanning),
+    CONNECTING(R.string.phase_connecting),
+    SETTING_UP(R.string.phase_setting_up),
+    READY(R.string.phase_ready),
+    RECONNECTING(R.string.phase_reconnecting),
 }
 
-enum class ProtocolKind(val label: String) {
-    V2("莫比 2.0 协议 (服务 0x8800)"),
-    V1("莫比 1.0 协议 (FFE0, 0xAB 帧)"),
-    HUANTONG("环通协议 (FFF0, 每秒心跳)"),
-    FTMS("FTMS 标准协议 (0x1826, 莫比变体)"),
-    DEMO("演示模式 Demo — 模拟椭圆机，未连接真实设备"),
+enum class ProtocolKind(@StringRes val labelRes: Int) {
+    V2(R.string.protocol_v2),
+    V1(R.string.protocol_v1),
+    HUANTONG(R.string.protocol_huantong),
+    FTMS(R.string.protocol_ftms),
+    DEMO(R.string.protocol_demo),
 }
 
 /** User choice for protocol selection. AUTO mirrors the official detection order. */
-enum class ProtocolChoice(val label: String, val kind: ProtocolKind?) {
-    AUTO("自动识别", null),
-    V2("强制 莫比 2.0", ProtocolKind.V2),
-    V1("强制 莫比 1.0", ProtocolKind.V1),
-    HUANTONG("强制 环通", ProtocolKind.HUANTONG),
-    FTMS("强制 FTMS", ProtocolKind.FTMS),
+enum class ProtocolChoice(@StringRes val labelRes: Int, val kind: ProtocolKind?) {
+    AUTO(R.string.choice_auto, null),
+    V2(R.string.choice_v2, ProtocolKind.V2),
+    V1(R.string.choice_v1, ProtocolKind.V1),
+    HUANTONG(R.string.choice_huantong, ProtocolKind.HUANTONG),
+    FTMS(R.string.choice_ftms, ProtocolKind.FTMS),
 }
 
 /**
@@ -31,16 +34,16 @@ enum class ProtocolChoice(val label: String, val kind: ProtocolKind?) {
  * The official app sends a single byte = level × 10 (FTMS v1.0 UINT8, 0.1 resolution).
  * Generic FTMS apps usually send SINT16, which these machines misinterpret.
  */
-enum class FtmsResistanceEncoding(val label: String) {
-    UINT8_X10("官方: 1 字节, 档位×10"),
-    SINT16_X10("2 字节 SINT16, 档位×10"),
-    UINT8_X1("1 字节, 档位原值"),
+enum class FtmsResistanceEncoding(@StringRes val labelRes: Int) {
+    UINT8_X10(R.string.ftms_enc_uint8_x10),
+    SINT16_X10(R.string.ftms_enc_sint16_x10),
+    UINT8_X1(R.string.ftms_enc_uint8_x1),
 }
 
-enum class WorkoutCommand(val label: String) {
-    START("开始"),
-    PAUSE("暂停"),
-    STOP("停止"),
+enum class WorkoutCommand(@StringRes val labelRes: Int) {
+    START(R.string.cmd_start),
+    PAUSE(R.string.cmd_pause),
+    STOP(R.string.cmd_stop),
 }
 
 data class MachineState(
@@ -48,11 +51,12 @@ data class MachineState(
     val deviceName: String? = null,
     val deviceAddress: String? = null,
     val protocol: ProtocolKind? = null,
-    val machineDescription: String? = null,
+    /** Resolved at display time so it follows the system language. */
+    val machineDescription: UiText? = null,
     val resistanceMin: Int = 1,
     val resistanceMax: Int = 24,
     /** Where the min/max came from, shown to the user. */
-    val resistanceRangeSource: String = "默认值",
+    @StringRes val resistanceRangeSource: Int = R.string.range_default,
     /** Mobi resistance mode: 0 none, 1 write only, 2 read only, 3 read+write. */
     val resistanceMode: Int? = null,
     /** Last level this app sent (or will keep sending, for HuanTong). */
@@ -77,12 +81,12 @@ data class MachineState(
     val heartRate: Int? = null,
     val heartRateUpdatedAt: Long = 0,
     val battery: Int? = null,
-    val machineRunState: String? = null,
+    @StringRes val machineRunState: Int? = null,
     val modelNumber: String? = null,
     val firmware: String? = null,
     /** True once the protocol finished its setup and accepts resistance commands. */
     val controlReady: Boolean = false,
-    val lastError: String? = null,
+    @StringRes val lastError: Int? = null,
 )
 
 data class FoundDevice(
@@ -93,24 +97,24 @@ data class FoundDevice(
 )
 
 /** Calorie formula. Both are copied from SportStateMachineToolKt in the official app. */
-enum class CalorieAlgorithm(val label: String) {
-    OFFICIAL_NEW("官方新算法（推荐）"),
-    OFFICIAL_OLD("官方老算法（高阻力时偏高）"),
+enum class CalorieAlgorithm(@StringRes val labelRes: Int) {
+    OFFICIAL_NEW(R.string.calorie_new),
+    OFFICIAL_OLD(R.string.calorie_old),
 }
 
-enum class WorkoutStatus(val label: String) {
-    IDLE("未开始"),
-    RUNNING("运动中"),
-    AUTO_PAUSED("自动暂停（没有踩动）"),
-    PAUSED("已暂停"),
-    FINISHED("已结束"),
+enum class WorkoutStatus(@StringRes val labelRes: Int) {
+    IDLE(R.string.status_idle),
+    RUNNING(R.string.status_running),
+    AUTO_PAUSED(R.string.status_auto_paused),
+    PAUSED(R.string.status_paused),
+    FINISHED(R.string.status_finished),
 }
 
 /** Where a total comes from, so the user can judge the number. */
-enum class DataSource(val label: String) {
-    NONE("—"),
-    MACHINE("机器上报"),
-    FORMULA("按官方公式计算"),
+enum class DataSource(@StringRes val labelRes: Int) {
+    NONE(R.string.source_none),
+    MACHINE(R.string.source_machine),
+    FORMULA(R.string.source_formula),
 }
 
 data class WorkoutStats(

@@ -13,6 +13,8 @@ import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.StringRes
+import com.keepgoing.elliptical.R
 import java.util.UUID
 
 /**
@@ -63,7 +65,7 @@ class GattLink(
 
     private val timeoutRunnable = Runnable {
         val op = current ?: return@Runnable
-        log("超时: ${op.label}")
+        logRes(R.string.log_gatt_timeout, op.label)
         finish(op, success = false, value = null)
     }
 
@@ -73,7 +75,7 @@ class GattLink(
         closeGatt()
         userDisconnect = false
         ready = false
-        log("连接 ${device.address} ...")
+        logRes(R.string.log_gatt_connecting, device.address)
         gatt = device.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE)
     }
 
@@ -142,11 +144,11 @@ class GattLink(
         val useIndicate = props and BluetoothGattCharacteristic.PROPERTY_NOTIFY == 0 &&
             props and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0
         if (!g.setCharacteristicNotification(ch, true)) {
-            log("setCharacteristicNotification 失败: ${ch.uuid.shortName()}")
+            logRes(R.string.log_gatt_set_notify_failed, ch.uuid.shortName())
         }
         val desc = ch.getDescriptor(BleUuids.CCCD)
         if (desc == null) {
-            log("${ch.uuid.shortName()} 没有 CCCD，直接视为已订阅")
+            logRes(R.string.log_gatt_no_cccd, ch.uuid.shortName())
             main.post { done?.invoke(true) }
             return
         }
@@ -160,7 +162,7 @@ class GattLink(
 
     private fun enqueue(op: Op) {
         if (gatt == null) {
-            log("未连接，丢弃: ${op.label}")
+            logRes(R.string.log_gatt_not_connected, op.label)
             fail(op)
             return
         }
@@ -187,11 +189,11 @@ class GattLink(
                 is Op.Cccd -> writeDescriptor(g, op.desc, op.value)
             }
         } catch (e: SecurityException) {
-            log("权限不足: ${e.message}")
+            logRes(R.string.log_gatt_permission, e.message.orEmpty())
             false
         }
         if (!started) {
-            log("发起失败: ${op.label}")
+            logRes(R.string.log_gatt_start_failed, op.label)
             main.post { finish(op, success = false, value = null) }
             return
         }
@@ -229,11 +231,11 @@ class GattLink(
             is Op.Mtu -> op.done(success)
             is Op.Read -> op.done(if (success) value else null)
             is Op.Write -> {
-                if (!success) log("写入失败: ${op.label}")
+                if (!success) logRes(R.string.log_gatt_write_failed, op.label)
                 op.done?.invoke(success)
             }
             is Op.Cccd -> {
-                if (!success) log("订阅失败: ${op.label}")
+                if (!success) logRes(R.string.log_gatt_cccd_failed, op.label)
                 op.done?.invoke(success)
             }
         }
@@ -251,6 +253,8 @@ class GattLink(
 
     private fun log(line: String) = listener.onLog(line)
 
+    private fun logRes(@StringRes id: Int, vararg args: Any) = log(context.getString(id, *args))
+
     // ---------------------------------------------------------------- callbacks (binder thread)
 
     private val callback = object : BluetoothGattCallback() {
@@ -260,7 +264,7 @@ class GattLink(
                 when (newState) {
                     BluetoothProfile.STATE_CONNECTED -> {
                         if (status != BluetoothGatt.GATT_SUCCESS) {
-                            log("连接异常 status=$status")
+                            logRes(R.string.log_gatt_connect_error, status)
                             handleDisconnected(status)
                             return@post
                         }
@@ -268,7 +272,7 @@ class GattLink(
                         // A short delay before discovery avoids GATT 133 on several Chinese BLE modules.
                         main.postDelayed({
                             if (g === gatt && !g.discoverServices()) {
-                                log("discoverServices 发起失败")
+                                logRes(R.string.log_gatt_discover_start_failed)
                                 g.disconnect()
                             }
                         }, 400)
@@ -282,18 +286,20 @@ class GattLink(
             main.post {
                 if (g !== gatt) return@post
                 if (status != BluetoothGatt.GATT_SUCCESS) {
-                    log("服务发现失败 status=$status")
+                    logRes(R.string.log_gatt_discover_failed, status)
                     g.disconnect()
                     return@post
                 }
                 for (s in g.services) {
-                    log("服务 ${s.uuid.shortName()}: " + s.characteristics.joinToString { c ->
-                        c.uuid.shortName() + "(" + propsText(c.properties) + ")"
-                    })
+                    logRes(
+                        R.string.log_gatt_service,
+                        s.uuid.shortName(),
+                        s.characteristics.joinToString { c -> c.uuid.shortName() + "(" + propsText(c.properties) + ")" },
+                    )
                 }
                 // The new official app (4.5.x) negotiates MTU 128 before talking to the machine.
                 requestMtu(128) { ok ->
-                    log(if (ok) "MTU=$mtu" else "MTU 协商失败，继续使用默认值")
+                    if (ok) logRes(R.string.log_gatt_mtu, mtu) else logRes(R.string.log_gatt_mtu_failed)
                     ready = true
                     listener.onLinkReady()
                 }

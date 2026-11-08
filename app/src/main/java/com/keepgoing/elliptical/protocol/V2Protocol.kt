@@ -1,5 +1,6 @@
 package com.keepgoing.elliptical.protocol
 
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.ble.BleUuids
 import com.keepgoing.elliptical.ble.bytesOf
 import com.keepgoing.elliptical.ble.toHex
@@ -41,7 +42,7 @@ class V2Protocol(host: ProtocolHost) : MachineProtocol(host) {
             link.read(ch) { v ->
                 if (v != null && v.isNotEmpty()) {
                     uploadMode = v[0].u()
-                    log("8801 数据模式=$uploadMode" + if (supportsStartStop()) " (需要开始指令)" else "")
+                    logRes(if (supportsStartStop()) R.string.log_v2_upload_mode_start else R.string.log_v2_upload_mode, uploadMode)
                 }
             }
         }
@@ -56,10 +57,10 @@ class V2Protocol(host: ProtocolHost) : MachineProtocol(host) {
         link.characteristic(svc, BleUuids.V2_RESISTANCE_RANGE)?.let { ch ->
             link.read(ch) { v ->
                 if (v == null) return@read
-                log("8806 阻力能力: ${v.toHex()}")
+                logRes(R.string.log_v2_range_raw, v.toHex())
                 if (v.size >= 3 && v[2].u() > 0) {
                     rangeFromDevice = true
-                    applyRange(v[1].u(), v[2].u(), "设备 0x8806", ResistanceTables.readWriteMode(v[0].u()))
+                    applyRange(v[1].u(), v[2].u(), R.string.src_device_8806, ResistanceTables.readWriteMode(v[0].u()))
                 }
             }
         }
@@ -79,23 +80,20 @@ class V2Protocol(host: ProtocolHost) : MachineProtocol(host) {
         }
         setupStandardServices()
         if (link.characteristic(svc, BleUuids.V2_CONTROL) == null) {
-            log("警告: 没有找到 0x880F 控制特征，无法调阻力")
+            logRes(R.string.warn_no_880f)
         }
         // The GATT queue is FIFO, so commands sent from now on run after the setup reads.
         host.update { it.copy(controlReady = true) }
     }
 
     private fun onSportType(type: Int, subType: Int) {
-        val desc = when (type) {
-            ResistanceTables.TYPE_ELLIPTICAL -> "椭圆机 " + ResistanceTables.ellipticalModel(subType)
-            else -> ResistanceTables.typeName(type) + " 子类型 $subType"
-        }
-        log("8802 设备类型=$type 子类型=$subType ($desc)")
+        val desc = ResistanceTables.describe(type, subType)
+        logRes(R.string.log_v2_sport_type, type, subType, desc.resolve(host.context))
         host.update { it.copy(machineDescription = desc) }
         reportMachineType(type, subType)
         if (!rangeFromDevice) {
             val caps = ResistanceTables.v2(type, subType)
-            applyRange(1, caps.max, "官方型号表", caps.mode)
+            applyRange(1, caps.max, R.string.src_official_table, caps.mode)
         }
     }
 
@@ -103,14 +101,14 @@ class V2Protocol(host: ProtocolHost) : MachineProtocol(host) {
 
     override fun setResistance(level: Int) {
         val ch = link.characteristic(BleUuids.V2_SERVICE, BleUuids.V2_CONTROL)
-            ?: return log("没有 0x880F，无法设置阻力")
+            ?: return logRes(R.string.err_no_880f)
         val frame = bytesOf(0x02, level.toString().length, level)
         withUnlock { link.write(ch, frame) }
     }
 
     override fun sendWorkout(cmd: WorkoutCommand) {
         if (!supportsStartStop()) {
-            log("8801 未声明需要开始/停止指令 (模式=$uploadMode)，与官方 App 一致不发送")
+            logRes(R.string.log_v2_no_start, uploadMode)
             return
         }
         val ch = link.characteristic(BleUuids.V2_SERVICE, BleUuids.V2_CONTROL) ?: return
@@ -131,17 +129,17 @@ class V2Protocol(host: ProtocolHost) : MachineProtocol(host) {
         if (unlocking) return
         val ch = link.characteristic(BleUuids.V2_SERVICE, BleUuids.V2_UNLOCK)
         if (ch == null) {
-            log("没有 0x88FF 解锁特征，直接发送")
+            logRes(R.string.log_v2_no_unlock)
             unlocked = true
             drainUnlockQueue()
             return
         }
         unlocking = true
-        log("发送写权限解锁 11 82 07 -> 0x88FF")
+        logRes(R.string.log_v2_unlock)
         link.write(ch, bytesOf(0x11, 0x82, 0x07)) { ok ->
             unlocking = false
             unlocked = ok
-            if (!ok) log("解锁写入失败，仍尝试发送命令（下次会重新解锁）")
+            if (!ok) logRes(R.string.log_v2_unlock_failed)
             drainUnlockQueue()
         }
     }
@@ -174,16 +172,16 @@ class V2Protocol(host: ProtocolHost) : MachineProtocol(host) {
             }
 
             BleUuids.V2_MACHINE_STATE -> {
-                val text = when (value[0].u()) {
-                    0 -> "停止"
-                    1 -> "运行"
-                    2 -> "暂停"
-                    else -> "状态 ${value[0].u()}"
+                val state = when (value[0].u()) {
+                    0 -> R.string.run_stopped
+                    1 -> R.string.run_running
+                    2 -> R.string.run_paused
+                    else -> null.also { logRes(R.string.run_state_n, value[0].u()) }
                 }
-                host.update { it.copy(machineRunState = text) }
+                host.update { it.copy(machineRunState = state) }
             }
 
-            BleUuids.V2_ERROR -> log("88E1 设备错误: ${value.toHex()}")
+            BleUuids.V2_ERROR -> logRes(R.string.log_v2_error, value.toHex())
         }
     }
 }

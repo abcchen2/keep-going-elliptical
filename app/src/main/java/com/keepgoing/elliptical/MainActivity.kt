@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                 ensureBluetoothOn()
             } else {
                 afterPermission = null
-                Toast.makeText(this, "需要蓝牙权限才能连接椭圆机", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, R.string.toast_need_permission, Toast.LENGTH_LONG).show()
             }
         }
 
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
             try {
                 enableBtLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             } catch (e: SecurityException) {
-                Toast.makeText(this, "请先在系统设置中打开蓝牙", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, R.string.toast_enable_bt, Toast.LENGTH_LONG).show()
             }
         }
     }

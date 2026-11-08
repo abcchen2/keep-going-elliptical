@@ -1,12 +1,14 @@
 package com.keepgoing.elliptical.protocol
 
 import android.bluetooth.BluetoothGattCharacteristic
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.ble.BleUuids
 import com.keepgoing.elliptical.ble.bytesOf
 import com.keepgoing.elliptical.ble.toHex
 import com.keepgoing.elliptical.ble.u
 import com.keepgoing.elliptical.ble.u32be
 import com.keepgoing.elliptical.model.ProtocolKind
+import com.keepgoing.elliptical.model.UiText
 import java.util.UUID
 
 /**
@@ -51,9 +53,9 @@ class V1Protocol(host: ProtocolHost) : MachineProtocol(host) {
         setupStandardServices()
         writeChar = link.characteristic(BleUuids.V1_SERVICE_FFE0, BleUuids.V1_WRITE_ELLIPTICAL)
             ?: link.findCharacteristic(BleUuids.V1_WRITE_ELLIPTICAL)
-        if (writeChar == null) log("警告: 没有找到 FFE3 写特征，无法调阻力")
+        if (writeChar == null) logRes(R.string.warn_no_ffe3)
         host.update {
-            it.copy(controlReady = true, machineDescription = it.machineDescription ?: "等待设备状态帧（请踩动椭圆机）")
+            it.copy(controlReady = true, machineDescription = it.machineDescription ?: UiText(R.string.v1_waiting_frame))
         }
     }
 
@@ -69,16 +71,12 @@ class V1Protocol(host: ProtocolHost) : MachineProtocol(host) {
             typeKnown = true
             type = value[3].u()
             subType = value[4].u()
-            val desc = if (type == ResistanceTables.TYPE_ELLIPTICAL) {
-                "椭圆机 " + ResistanceTables.ellipticalModel(subType)
-            } else {
-                ResistanceTables.typeName(type) + " 子类型 $subType"
-            }
-            log("状态帧: 类型=$type 子类型=$subType ($desc) 原始=${value.toHex()}")
+            val desc = ResistanceTables.describe(type, subType)
+            logRes(R.string.log_v1_frame, type, subType, desc.resolve(host.context), value.toHex())
             host.update { it.copy(machineDescription = desc) }
             reportMachineType(type, subType)
             val caps = ResistanceTables.v1(type, subType)
-            applyRange(1, caps.max, "官方型号表", caps.mode)
+            applyRange(1, caps.max, R.string.src_official_table, caps.mode)
         }
 
         if (value[1].u() == 4 && (type == ResistanceTables.TYPE_BIKE || type == ResistanceTables.TYPE_ELLIPTICAL) && value.size > 13) {
@@ -96,17 +94,17 @@ class V1Protocol(host: ProtocolHost) : MachineProtocol(host) {
 
         pendingLevel?.let {
             pendingLevel = null
-            log("已收到状态帧，发送之前排队的阻力 $it")
+            logRes(R.string.log_v1_sending_queued, it)
             setResistance(it)
         }
     }
 
     override fun setResistance(level: Int) {
-        val ch = writeChar ?: return log("没有 FFE3，无法设置阻力")
+        val ch = writeChar ?: return logRes(R.string.err_no_ffe3)
         val f = statusFrame ?: lastFrame?.takeIf { it.size > 6 }
         if (f == null) {
             pendingLevel = level
-            log("还没收到设备状态帧，阻力 $level 将在收到后自动发送（请踩动椭圆机唤醒设备）")
+            logRes(R.string.log_v1_queued, level)
             return
         }
         link.write(ch, bytesOf(0xAB, 0x03, 0x00, f[3].u(), f[4].u(), level, f[6].u()))

@@ -1,6 +1,7 @@
 package com.keepgoing.elliptical.protocol
 
 import android.bluetooth.BluetoothGattCharacteristic
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.ble.BleUuids
 import com.keepgoing.elliptical.ble.bytesOf
 import com.keepgoing.elliptical.ble.s16le
@@ -10,6 +11,7 @@ import com.keepgoing.elliptical.ble.u16le
 import com.keepgoing.elliptical.ble.u24le
 import com.keepgoing.elliptical.model.FtmsResistanceEncoding
 import com.keepgoing.elliptical.model.ProtocolKind
+import com.keepgoing.elliptical.model.UiText
 import com.keepgoing.elliptical.model.WorkoutCommand
 import java.util.UUID
 import kotlin.math.roundToInt
@@ -42,12 +44,12 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
         controlPoint = link.characteristic(svc, BleUuids.FTMS_CONTROL_POINT)
         val cp = controlPoint
         if (cp == null) {
-            log("警告: 没有 0x2AD9 控制点，无法调阻力")
+            logRes(R.string.warn_no_2ad9)
         } else {
             // The official app never subscribes to the control point. Spec-compliant machines
             // require it before accepting writes, Mobi machines do not care, so enable it when offered.
             if (cp.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0) link.enableNotify(cp)
-            log("请求控制权 00 -> 0x2AD9")
+            logRes(R.string.log_ftms_request_control)
             link.write(cp, bytesOf(0x00))
         }
 
@@ -72,7 +74,7 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
         val elliptical = link.characteristic(svc, BleUuids.FTMS_CROSS_TRAINER_DATA) != null
         reportMachineType(if (elliptical) ResistanceTables.TYPE_ELLIPTICAL else ResistanceTables.TYPE_BIKE, null)
         host.update {
-            it.copy(controlReady = true, machineDescription = it.machineDescription ?: if (elliptical) "FTMS 椭圆机" else "FTMS 健身设备")
+            it.copy(controlReady = true, machineDescription = it.machineDescription ?: UiText(if (elliptical) R.string.ftms_desc_elliptical else R.string.ftms_desc_generic))
         }
     }
 
@@ -82,13 +84,13 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
         var mode = 0
         if (machine shr 7 and 1 == 1) mode = 2          // Resistance Level Supported
         if (target shr 2 and 1 == 1) mode = 3           // Resistance Target Setting Supported
-        log("2ACC 特性: machine=0x%08X target=0x%08X".format(machine, target))
+        log("2ACC: machine=0x%08X target=0x%08X".format(machine, target))
         host.update { it.copy(resistanceMode = mode) }
-        if (target shr 2 and 1 == 0) log("提示: 设备未声明支持阻力目标设置，仍会尝试发送")
+        if (target shr 2 and 1 == 0) logRes(R.string.log_ftms_no_target)
     }
 
     private fun onResistanceRange(v: ByteArray) {
-        log("2AD6 阻力范围: ${v.toHex()}")
+        logRes(R.string.log_ftms_range_raw, v.toHex())
         if (v.size < 4) return
         val rawMin = v.s16le(0)
         val rawMax = v.s16le(2)
@@ -96,19 +98,19 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
         var max = (rawMax * 0.1).roundToInt()
         if (max < 2 && rawMax in 2..100) {
             // Some boards report whole levels here instead of 0.1 units.
-            log("2AD6 看起来是整数档位，按原值使用")
+            logRes(R.string.log_ftms_range_integer)
             min = rawMin
             max = rawMax
         }
-        if (max > 0) applyRange(min, max, "设备 0x2AD6")
+        if (max > 0) applyRange(min, max, R.string.src_device_2ad6)
     }
 
     override fun setResistance(level: Int) {
-        val cp = controlPoint ?: return log("没有 0x2AD9，无法设置阻力")
+        val cp = controlPoint ?: return logRes(R.string.err_no_2ad9)
         val cmd = when (host.settings.ftmsEncoding) {
             FtmsResistanceEncoding.UINT8_X10 -> {
                 val p = level * 10
-                if (p > 255) log("档位 $level ×10 超过 1 字节，已截断为 25.5；如需更高档位请切换为 SINT16 编码")
+                if (p > 255) logRes(R.string.log_ftms_truncated, level)
                 bytesOf(0x04, p.coerceAtMost(255))
             }
             FtmsResistanceEncoding.SINT16_X10 -> {
@@ -145,7 +147,7 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
             BleUuids.FTMS_CROSS_TRAINER_DATA -> parseCrossTrainer(value)
             BleUuids.FTMS_INDOOR_BIKE_DATA -> parseIndoorBike(value)
             BleUuids.FTMS_STATUS -> onMachineStatus(value)
-            BleUuids.FTMS_TRAINING_STATUS -> if (value.size >= 2) log("训练状态: ${value[1].u()}")
+            BleUuids.FTMS_TRAINING_STATUS -> if (value.size >= 2) logRes(R.string.log_ftms_training_status, value[1].u())
         }
     }
 
@@ -154,19 +156,19 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
         val op = v[1].u()
         val result = v[2].u()
         val text = when (result) {
-            1 -> "成功"
-            2 -> "不支持该指令"
-            3 -> "参数无效"
-            4 -> "执行失败"
-            5 -> "没有控制权"
-            else -> "结果 $result"
+            1 -> s(R.string.ftms_result_1)
+            2 -> s(R.string.ftms_result_2)
+            3 -> s(R.string.ftms_result_3)
+            4 -> s(R.string.ftms_result_4)
+            5 -> s(R.string.ftms_result_5)
+            else -> s(R.string.ftms_result_n, result)
         }
-        log("2AD9 应答: 指令 0x%02X -> %s".format(op, text))
+        logRes(R.string.log_ftms_response, op, text)
         if (result == 5 && !retriedAfterDenied) {
             val again = lastCommand ?: return
             val cp = controlPoint ?: return
             retriedAfterDenied = true
-            log("重新请求控制权后重发")
+            logRes(R.string.log_ftms_retry)
             link.write(cp, bytesOf(0x00))
             link.write(cp, again)
         }
@@ -174,11 +176,11 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
 
     private fun onMachineStatus(v: ByteArray) {
         when (v[0].u()) {
-            0x02 -> host.update { it.copy(machineRunState = if (v.size > 1 && v[1].u() == 2) "暂停" else "停止") }
-            0x04 -> host.update { it.copy(machineRunState = "运行") }
-            0x07 -> if (v.size >= 2) log("设备确认目标阻力 ${v[1].u() / 10.0}")
-            0xFF -> log("设备收回了控制权，下次调节会重新请求")
-            else -> log("2ADA 状态: ${v.toHex()}")
+            0x02 -> host.update { it.copy(machineRunState = if (v.size > 1 && v[1].u() == 2) R.string.run_paused else R.string.run_stopped) }
+            0x04 -> host.update { it.copy(machineRunState = R.string.run_running) }
+            0x07 -> if (v.size >= 2) logRes(R.string.log_ftms_target_ack, v[1].u() / 10.0)
+            0xFF -> logRes(R.string.log_ftms_control_lost)
+            else -> logRes(R.string.log_ftms_status, v.toHex())
         }
     }
 
@@ -241,7 +243,7 @@ class FtmsProtocol(host: ProtocolHost) : MachineProtocol(host) {
             else -> crossTrainerFlagSize
         }
         if (size != crossTrainerFlagSize) {
-            log("2ACE 标志位长度按实际数据调整为 $size 字节")
+            logRes(R.string.log_ftms_flag_size, size)
             crossTrainerFlagSize = size
         }
         applyValues(decode(v, size, fields))

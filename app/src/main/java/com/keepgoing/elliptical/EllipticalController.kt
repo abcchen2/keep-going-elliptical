@@ -9,6 +9,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.StringRes
 import com.keepgoing.elliptical.ble.BleUuids
 import com.keepgoing.elliptical.ble.GattLink
 import com.keepgoing.elliptical.ble.shortName
@@ -77,7 +78,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         override fun onScanResult(callbackType: Int, result: ScanResult) = onScan(result)
         override fun onBatchScanResults(results: MutableList<ScanResult>) = results.forEach { onScan(it) }
         override fun onScanFailed(errorCode: Int) {
-            log("扫描失败 code=$errorCode")
+            logRes(R.string.log_scan_failed, errorCode)
             scanning = false
             setPhase(ConnectionPhase.IDLE)
         }
@@ -85,14 +86,14 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
 
     fun startScan() {
         val scanner = adapter?.bluetoothLeScanner ?: run {
-            log("蓝牙未开启")
+            logRes(R.string.log_bt_off)
             return
         }
         if (scanning) return
         _devices.value = emptyList()
         scanning = true
         if (_state.value.phase == ConnectionPhase.IDLE) setPhase(ConnectionPhase.SCANNING)
-        log("开始扫描（12 秒）")
+        logRes(R.string.log_scan_start)
         // No service filter: several Mobi boxes advertise only their name.
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
         scanner.startScan(null, settings, scanCallback)
@@ -108,7 +109,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         } catch (_: Exception) {
         }
         if (_state.value.phase == ConnectionPhase.SCANNING) setPhase(ConnectionPhase.IDLE)
-        log("扫描结束，找到 ${_devices.value.size} 个设备")
+        logRes(R.string.log_scan_done, _devices.value.size)
     }
 
     private fun onScan(r: ScanResult) {
@@ -198,7 +199,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         } catch (e: IllegalArgumentException) {
             null
         } ?: run {
-            log("无效的设备地址 $addr")
+            logRes(R.string.log_invalid_address, addr)
             setPhase(ConnectionPhase.IDLE)
             return
         }
@@ -222,7 +223,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
     }
 
     override fun onLinkConnected() {
-        log("已建立连接，正在发现服务")
+        logRes(R.string.log_link_connected)
         setPhase(ConnectionPhase.SETTING_UP)
     }
 
@@ -231,12 +232,16 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         val forced = settings.protocolChoice.kind
         val kind = forced ?: auto
         if (kind == null) {
-            log("未识别的蓝牙协议：没有 8800 / FFE0 / FFF0 / FFC0 / 1826 服务")
-            _state.update { it.copy(lastError = "这不是已知的莫比设备协议") }
+            logRes(R.string.log_unknown_protocol)
+            _state.update { it.copy(lastError = R.string.err_unknown_protocol) }
             link.disconnect()
             return
         }
-        log("协议: ${kind.label}" + if (forced != null) "（手动指定，自动识别结果=${auto?.label ?: "无"}）" else "")
+        if (forced != null) {
+            logRes(R.string.log_protocol_forced, s(kind.labelRes), auto?.let { s(it.labelRes) } ?: s(R.string.none))
+        } else {
+            logRes(R.string.log_protocol, s(kind.labelRes))
+        }
         reconnectAttempts = 0
         _state.update {
             it.copy(phase = ConnectionPhase.READY, protocol = kind, lastError = null, controlReady = false)
@@ -247,7 +252,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         if (restoreResistanceAfterConnect) {
             restoreResistanceAfterConnect = false
             val level = _state.value.targetResistance
-            log("重连后恢复阻力 $level")
+            logRes(R.string.log_restore_level, level)
             sendResistanceNow(level)
         }
     }
@@ -255,13 +260,13 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
     override fun onLinkDisconnected(status: Int, userRequested: Boolean) {
         if (protocol is DemoMachine) {
             // A real link closed after the user switched to demo mode; leave the demo running.
-            log("蓝牙连接已关闭（演示模式继续运行）")
+            logRes(R.string.log_demo_link_closed)
             return
         }
         protocol?.release()
         protocol = null
         val wasReady = _state.value.phase == ConnectionPhase.READY
-        log("连接断开 status=$status" + if (userRequested) "（主动断开）" else "")
+        logRes(if (userRequested) R.string.log_disconnected_user else R.string.log_disconnected, status)
         _state.update { it.copy(controlReady = false) }
         val addr = targetAddress
         if (userRequested || addr == null) {
@@ -274,16 +279,16 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
             reconnectAttempts++
             restoreResistanceAfterConnect = wasReady || restoreResistanceAfterConnect
             val delay = 1500L * reconnectAttempts
-            log("${delay / 1000.0} 秒后第 $reconnectAttempts 次重连")
+            logRes(R.string.log_reconnect, delay / 1000.0, reconnectAttempts)
             setPhase(ConnectionPhase.RECONNECTING)
             main.postAtTime({ openLink() }, RECONNECT_TOKEN, android.os.SystemClock.uptimeMillis() + delay)
         } else {
-            _state.update { it.copy(phase = ConnectionPhase.IDLE, lastError = "连接已断开") }
+            _state.update { it.copy(phase = ConnectionPhase.IDLE, lastError = R.string.err_disconnected) }
         }
     }
 
     override fun onNotify(characteristic: UUID, value: ByteArray) {
-        if (verboseNotify) log("通知 ${characteristic.shortName()}: ${value.toHex()}")
+        if (verboseNotify) logRes(R.string.log_notify, characteristic.shortName(), value.toHex())
         protocol?.onNotify(characteristic, value)
     }
 
@@ -309,18 +314,19 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
     private fun sendResistanceNow(level: Int) {
         val p = protocol
         if (p == null) {
-            log("设备未连接，阻力 $level 将在连接后发送")
+            logRes(R.string.log_level_pending, level)
             restoreResistanceAfterConnect = true
             return
         }
         // Protocols queue their setup first (FIFO GATT queue) and buffer the level if
         // they still need data from the machine, so it is safe to forward right away.
-        log("设置阻力 -> $level")
+        logRes(R.string.log_set_level, level)
         p.setResistance(level)
     }
 
     /** Per-workout time / distance / calories / heart rate. Starts by itself when pedalling begins. */
     val workout = WorkoutTracker(
+        context = context,
         settings = settings,
         machine = { _state.value },
         sendToMachine = { cmd -> protocol?.sendWorkout(cmd) },
@@ -332,17 +338,17 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         val id = try {
             if (charShortUuid.length == 4) uuid16(charShortUuid.lowercase()) else UUID.fromString(charShortUuid)
         } catch (e: IllegalArgumentException) {
-            return "UUID 格式不对"
+            return s(R.string.raw_bad_uuid)
         }
         val clean = hex.replace(" ", "").replace(",", "")
-        if (clean.isEmpty() || clean.length % 2 != 0) return "十六进制长度不对"
+        if (clean.isEmpty() || clean.length % 2 != 0) return s(R.string.raw_bad_length)
         val data = try {
             ByteArray(clean.length / 2) { clean.substring(it * 2, it * 2 + 2).toInt(16).toByte() }
         } catch (e: NumberFormatException) {
-            return "包含非十六进制字符"
+            return s(R.string.raw_bad_char)
         }
-        val ch = link.findCharacteristic(id) ?: return "设备上没有特征 $charShortUuid"
-        link.write(ch, data) { ok -> log("原始写入 ${id.shortName()} [${data.toHex()}] ${if (ok) "成功" else "失败"}") }
+        val ch = link.findCharacteristic(id) ?: return s(R.string.raw_no_char, charShortUuid)
+        link.write(ch, data) { ok -> logRes(R.string.log_raw_write, id.shortName(), data.toHex(), s(if (ok) R.string.ok else R.string.failed)) }
         return null
     }
 
@@ -350,7 +356,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
         // Called when the user changes the max-resistance override.
         val override = settings.maxResistanceOverride
         if (override > 0) {
-            _state.update { it.copy(resistanceMax = override, resistanceRangeSource = "手动设置") }
+            _state.update { it.copy(resistanceMax = override, resistanceRangeSource = R.string.range_manual) }
         }
     }
 
@@ -361,6 +367,7 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
     // ------------------------------------------------------------------ host for protocols
 
     private val host = object : ProtocolHost {
+        override val context: Context get() = this@EllipticalController.context
         override val link: GattLink get() = this@EllipticalController.link
         override val deviceName: String get() = targetName
         override val settings: AppSettings get() = this@EllipticalController.settings
@@ -376,6 +383,11 @@ class EllipticalController(private val context: Context) : GattLink.Listener {
     }
 
     private fun setPhase(phase: ConnectionPhase) = _state.update { it.copy(phase = phase) }
+
+    /** Localised string; follows the system language. */
+    private fun s(@StringRes id: Int, vararg args: Any): String = context.getString(id, *args)
+
+    private fun logRes(@StringRes id: Int, vararg args: Any) = log(s(id, *args))
 
     private fun log(line: String) {
         val entry = timeFormat.format(Date()) + "  " + line

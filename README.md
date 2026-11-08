@@ -41,23 +41,23 @@ write right after the unlock). This app does the same serialization.
 - Auto start / auto pause / reconnect that restores the level.
 - Diagnostics: full GATT log with copy, raw hex writes to any characteristic.
 - **Demo mode**: a simulated elliptical, so the app can be tried without a Mobi machine.
+- English / Chinese UI and logs, following the system language.
 
 ## Try it (judges / testers)
 
 1. Install the APK from the [latest GitHub Release](../../releases/latest) (Android 8.0+).
-2. Open the app and tap **演示模式 Demo（无需设备）** ("Demo mode, no device needed"). No Bluetooth permission is needed.
-3. Within 1–2 s the workout starts by itself. Change the resistance with **+ / −**: the "机器反馈" (machine feedback)
+2. Open the app and tap **Demo mode (no device needed)**. No Bluetooth permission is needed.
+3. Within 1–2 s the workout starts by itself. Change the resistance with **+ / −**: the "Machine feedback"
    number follows after ~300 ms, cadence drops at higher levels and heart rate rises.
-4. In the demo card, turn off **正在踩动** ("pedalling") to see cadence go to 0 and, after the auto-pause time
-   (settings, default 60 s), the workout pauses itself.
-5. Tap **结束** ("finish") to save the workout; it appears under **锻炼记录** ("workout history").
+4. In the **Demo mode** card, turn off **Pedalling** to see cadence go to 0 and, after the auto-pause time
+   (Settings, default 60 s), the workout pauses itself.
+5. Tap **Finish** to save the workout; it appears under **Workout history**.
 
-UI labels are in Chinese because the users are Chinese owners. Key labels: 阻力 resistance,
-本次锻炼 this workout, 里程 distance, 热量 calories, 心率 heart rate, 踏频 cadence, 设置 settings,
-日志与调试 log & debug.
+The UI follows the system language: English by default, Simplified Chinese on Chinese systems
+(`res/values` and `res/values-zh`). Switching the language while a workout runs keeps the session.
 
 With a real Mobi machine: power it on and pedal a few strokes to wake the box, close the
-official app, tap **扫描设备** (scan), then pick the highlighted `MOBI…` / `MB-…` device.
+official app, tap **Scan for devices**, then pick the highlighted `MOBI…` / `MB-…` device.
 
 ## Build
 

@@ -44,7 +44,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.keepgoing.elliptical.EllipticalController
+import com.keepgoing.elliptical.R
 import com.keepgoing.elliptical.model.ConnectionPhase
 import com.keepgoing.elliptical.model.FoundDevice
 import com.keepgoing.elliptical.model.FtmsResistanceEncoding
@@ -129,9 +132,9 @@ fun MainScreen(controller: EllipticalController, withBluetooth: (() -> Unit) -> 
 @Composable
 private fun Header() {
     Column {
-        Text("椭圆机续命", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.app_name), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         Text(
-            "Keep Going Elliptical · 无需登录，直连莫比 (Mobi) 椭圆机调阻力",
+            stringResource(R.string.app_subtitle),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
         )
@@ -155,7 +158,7 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
 
 @Composable
 private fun StatusCard(state: MachineState, onDisconnect: () -> Unit) {
-    SectionCard("状态") {
+    SectionCard(stringResource(R.string.card_status)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val color = when (state.phase) {
                 ConnectionPhase.READY -> Color(0xFF2E7D32)
@@ -164,28 +167,28 @@ private fun StatusCard(state: MachineState, onDisconnect: () -> Unit) {
             }
             Box(Modifier.size(12.dp).background(color, RoundedCornerShape(6.dp)))
             Spacer(Modifier.width(8.dp))
-            Text(state.phase.label, fontWeight = FontWeight.Medium)
+            Text(stringResource(state.phase.labelRes), fontWeight = FontWeight.Medium)
             Spacer(Modifier.weight(1f))
             if (state.phase != ConnectionPhase.IDLE && state.phase != ConnectionPhase.SCANNING) {
-                TextButton(onClick = onDisconnect) { Text("断开") }
+                TextButton(onClick = onDisconnect) { Text(stringResource(R.string.action_disconnect)) }
             }
         }
-        state.deviceName?.let { Text("设备: $it  ${state.deviceAddress.orEmpty()}") }
-        state.protocol?.let { Text("协议: ${it.label}") }
-        state.machineDescription?.let { Text("机型: $it") }
+        state.deviceName?.let { Text(stringResource(R.string.label_device, it, state.deviceAddress.orEmpty())) }
+        state.protocol?.let { Text(stringResource(R.string.label_protocol, stringResource(it.labelRes))) }
+        state.machineDescription?.let { Text(stringResource(R.string.label_machine, it.resolve(LocalContext.current))) }
         val extra = listOfNotNull(
-            state.modelNumber?.let { "型号 $it" },
-            state.firmware?.let { "固件 $it" },
-            state.battery?.takeIf { it > 0 }?.let { "电量 $it%" },
+            state.modelNumber?.let { stringResource(R.string.label_model, it) },
+            state.firmware?.let { stringResource(R.string.label_firmware, it) },
+            state.battery?.takeIf { it > 0 }?.let { stringResource(R.string.label_battery, it) },
         )
         if (extra.isNotEmpty()) Text(extra.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
-        state.lastError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        state.lastError?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
     }
 }
 
 @Composable
 private fun ResistanceCard(state: MachineState, onSet: (Int) -> Unit) {
-    SectionCard("阻力") {
+    SectionCard(stringResource(R.string.card_resistance)) {
         val min = state.resistanceMin
         val max = state.resistanceMax.coerceAtLeast(min + 1)
         var slider by remember { mutableFloatStateOf(state.targetResistance.toFloat()) }
@@ -206,7 +209,7 @@ private fun ResistanceCard(state: MachineState, onSet: (Int) -> Unit) {
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    "机器反馈: " + (state.reportedResistance?.toString() ?: "—"),
+                    stringResource(R.string.label_machine_feedback, state.reportedResistance?.toString() ?: "—"),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -235,23 +238,26 @@ private fun ResistanceCard(state: MachineState, onSet: (Int) -> Unit) {
             }
         }
         Text(
-            "范围 $min–$max（${state.resistanceRangeSource}）" +
-                (state.resistanceMode?.let { " · 官方标记: ${ResistanceTables.modeText(it)}" } ?: ""),
+            stringResource(R.string.label_range, min, max, stringResource(state.resistanceRangeSource)).let { range ->
+                state.resistanceMode?.let {
+                    stringResource(R.string.label_range_mode, range, stringResource(ResistanceTables.modeText(it)))
+                } ?: range
+            },
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
         )
         if (!state.controlReady) {
-            Text("设备初始化中，调节会在就绪后发送", color = Color(0xFFF9A825), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.hint_setting_up), color = Color(0xFFF9A825), style = MaterialTheme.typography.bodySmall)
         }
         if (state.protocol == ProtocolKind.HUANTONG) {
             Text(
-                "环通主板没有阻力回读，本 App 每秒发送一次当前档位（与官方一致），请保持 App 在前台。",
+                stringResource(R.string.hint_huantong),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
             )
         }
         if (state.protocol == ProtocolKind.V1 && state.reportedResistance == null) {
-            Text("1.0 盒子需要先收到机器状态帧，请踩动几圈椭圆机。", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(stringResource(R.string.hint_v1), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
     }
 }
@@ -259,7 +265,9 @@ private fun ResistanceCard(state: MachineState, onSet: (Int) -> Unit) {
 private fun formatDuration(sec: Int): String =
     if (sec >= 3600) "%d:%02d:%02d".format(sec / 3600, sec % 3600 / 60, sec % 60) else "%02d:%02d".format(sec / 60, sec % 60)
 
-private fun formatDistance(m: Double): String = if (m >= 1000) "%.2f km".format(m / 1000) else "%.0f m".format(m)
+@Composable
+private fun formatDistance(m: Double): String =
+    if (m >= 1000) stringResource(R.string.unit_km, m / 1000) else stringResource(R.string.unit_m, m)
 
 @Composable
 private fun WorkoutCard(stats: WorkoutStats, state: MachineState, tracker: WorkoutTracker) {
@@ -267,7 +275,7 @@ private fun WorkoutCard(stats: WorkoutStats, state: MachineState, tracker: Worko
     val liveRpm = state.rpm?.takeIf { it > 0 && now - state.rpmUpdatedAt <= 5000 }
     val liveHr = state.heartRate?.takeIf { now - state.heartRateUpdatedAt <= 5000 }
 
-    SectionCard("本次锻炼 · ${stats.status.label}") {
+    SectionCard(stringResource(R.string.card_workout, stringResource(stats.status.labelRes))) {
         Text(
             formatDuration(stats.activeSec),
             fontSize = 44.sp,
@@ -276,26 +284,26 @@ private fun WorkoutCard(stats: WorkoutStats, state: MachineState, tracker: Worko
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
         Row(Modifier.fillMaxWidth()) {
-            Metric("里程", formatDistance(stats.distanceM), Modifier.weight(1f))
-            Metric("热量 kcal", "%.1f".format(stats.calories), Modifier.weight(1f))
-            Metric("心率", liveHr?.toString(), Modifier.weight(1f))
+            Metric(stringResource(R.string.metric_distance), formatDistance(stats.distanceM), Modifier.weight(1f))
+            Metric(stringResource(R.string.metric_calories), "%.1f".format(stats.calories), Modifier.weight(1f))
+            Metric(stringResource(R.string.metric_heart_rate), liveHr?.toString(), Modifier.weight(1f))
         }
         Row(Modifier.fillMaxWidth()) {
-            Metric("踏频 rpm", liveRpm?.let { "%.0f".format(it) } ?: "0", Modifier.weight(1f))
-            Metric("速度 km/h", "%.1f".format(stats.speedKmh), Modifier.weight(1f))
-            Metric("消耗 kcal/分", "%.1f".format(stats.kcalPerMin), Modifier.weight(1f))
+            Metric(stringResource(R.string.metric_cadence), liveRpm?.let { "%.0f".format(it) } ?: "0", Modifier.weight(1f))
+            Metric(stringResource(R.string.metric_speed), "%.1f".format(stats.speedKmh), Modifier.weight(1f))
+            Metric(stringResource(R.string.metric_burn_rate), "%.1f".format(stats.kcalPerMin), Modifier.weight(1f))
         }
         Text(
             listOfNotNull(
-                "平均踏频 %.0f".format(stats.avgRpm),
-                "平均阻力 %.1f".format(stats.avgResistance),
-                stats.avgHeartRate?.let { "平均心率 $it" },
-                stats.maxHeartRate?.let { "最高心率 $it" },
+                stringResource(R.string.stat_avg_rpm, stats.avgRpm),
+                stringResource(R.string.stat_avg_resistance, stats.avgResistance),
+                stats.avgHeartRate?.let { stringResource(R.string.stat_avg_hr, it) },
+                stats.maxHeartRate?.let { stringResource(R.string.stat_max_hr, it) },
             ).joinToString(" · "),
             style = MaterialTheme.typography.bodySmall,
         )
         Text(
-            "里程: ${stats.distanceSource.label} · 热量: ${stats.calorieSource.label}",
+            stringResource(R.string.label_sources, stringResource(stats.distanceSource.labelRes), stringResource(stats.calorieSource.labelRes)),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
         )
@@ -303,39 +311,41 @@ private fun WorkoutCard(stats: WorkoutStats, state: MachineState, tracker: Worko
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             when (stats.status) {
                 WorkoutStatus.IDLE -> {
-                    Button(onClick = { tracker.start() }, modifier = Modifier.weight(1f)) { Text("开始") }
+                    Button(onClick = { tracker.start() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_start)) }
                 }
                 WorkoutStatus.RUNNING, WorkoutStatus.AUTO_PAUSED -> {
-                    OutlinedButton(onClick = { tracker.pause() }, modifier = Modifier.weight(1f)) { Text("暂停") }
-                    Button(onClick = { tracker.finish() }, modifier = Modifier.weight(1f)) { Text("结束") }
+                    OutlinedButton(onClick = { tracker.pause() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_pause)) }
+                    Button(onClick = { tracker.finish() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_finish)) }
                 }
                 WorkoutStatus.PAUSED -> {
-                    Button(onClick = { tracker.resume() }, modifier = Modifier.weight(1f)) { Text("继续") }
-                    OutlinedButton(onClick = { tracker.finish() }, modifier = Modifier.weight(1f)) { Text("结束") }
+                    Button(onClick = { tracker.resume() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_resume)) }
+                    OutlinedButton(onClick = { tracker.finish() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_finish)) }
                 }
                 WorkoutStatus.FINISHED -> {
-                    OutlinedButton(onClick = { tracker.reset() }, modifier = Modifier.weight(1f)) { Text("关闭") }
-                    Button(onClick = { tracker.start() }, modifier = Modifier.weight(1f)) { Text("开始新锻炼") }
+                    OutlinedButton(onClick = { tracker.reset() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_close)) }
+                    Button(onClick = { tracker.start() }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.action_new_workout)) }
                 }
             }
         }
         if (stats.status == WorkoutStatus.IDLE) {
-            Text("开始踩动会自动开始计时，停止踩动一段时间会自动暂停。", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(stringResource(R.string.hint_auto_start), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
-        state.machineRunState?.let { Text("机器状态: $it", style = MaterialTheme.typography.bodySmall, color = Color.Gray) }
+        state.machineRunState?.let {
+            Text(stringResource(R.string.label_machine_state, stringResource(it)), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
     }
 }
 
 @Composable
 private fun DemoCard(controller: EllipticalController) {
     var pedalling by remember { mutableStateOf(controller.demoPedalling) }
-    SectionCard("演示模式") {
+    SectionCard(stringResource(R.string.card_demo)) {
         Text(
-            "当前是模拟椭圆机：踏频随阻力变化，心率随强度上升，阻力 300 毫秒后回读。关掉“正在踩动”可以看到自动暂停。",
+            stringResource(R.string.hint_demo),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
         )
-        SwitchRow("正在踩动", pedalling) {
+        SwitchRow(stringResource(R.string.label_pedalling), pedalling) {
             pedalling = it
             controller.demoPedalling = it
         }
@@ -346,21 +356,26 @@ private fun DemoCard(controller: EllipticalController) {
 private fun HistoryCard(history: List<WorkoutRecord>, onClear: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val fmt = remember { java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault()) }
-    SectionCard("锻炼记录") {
+    SectionCard(stringResource(R.string.card_history)) {
         val shown = if (expanded) history else history.take(3)
         shown.forEach { r ->
             Column {
                 Text(
-                    "${fmt.format(java.util.Date(r.startedAt))}  ${formatDuration(r.activeSec)}  " +
-                        "${formatDistance(r.distanceM)}  %.0f kcal".format(r.calories),
+                    stringResource(
+                        R.string.history_line,
+                        fmt.format(java.util.Date(r.startedAt)),
+                        formatDuration(r.activeSec),
+                        formatDistance(r.distanceM),
+                        r.calories,
+                    ),
                     fontWeight = FontWeight.Medium,
                 )
                 Text(
                     listOfNotNull(
-                        "平均踏频 %.0f".format(r.avgRpm),
-                        "平均阻力 %.1f".format(r.avgResistance),
-                        r.avgHeartRate?.let { "平均心率 $it" },
-                        r.maxHeartRate?.let { "最高 $it" },
+                        stringResource(R.string.stat_avg_rpm, r.avgRpm),
+                        stringResource(R.string.stat_avg_resistance, r.avgResistance),
+                        r.avgHeartRate?.let { stringResource(R.string.stat_avg_hr, it) },
+                        r.maxHeartRate?.let { stringResource(R.string.stat_max_hr, it) },
                     ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
@@ -369,9 +384,11 @@ private fun HistoryCard(history: List<WorkoutRecord>, onClear: () -> Unit) {
         }
         Row {
             if (history.size > 3) {
-                TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "收起" else "全部 ${history.size} 条") }
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(if (expanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_show_all, history.size))
+                }
             }
-            TextButton(onClick = onClear) { Text("清空记录") }
+            TextButton(onClick = onClear) { Text(stringResource(R.string.action_clear_history)) }
         }
     }
 }
@@ -393,25 +410,25 @@ private fun ConnectCard(
     onConnectLast: () -> Unit,
     onDemo: () -> Unit,
 ) {
-    SectionCard("连接椭圆机") {
+    SectionCard(stringResource(R.string.card_connect)) {
         Text(
-            "先给椭圆机通电并踩几圈唤醒蓝牙盒子。不要同时打开官方 App。",
+            stringResource(R.string.hint_connect),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (scanning) {
-                OutlinedButton(onClick = onStopScan) { Text("停止扫描") }
+                OutlinedButton(onClick = onStopScan) { Text(stringResource(R.string.action_stop_scan)) }
             } else {
-                Button(onClick = onScan) { Text("扫描设备") }
+                Button(onClick = onScan) { Text(stringResource(R.string.action_scan)) }
             }
             if (lastName != null) {
-                OutlinedButton(onClick = onConnectLast) { Text("连接上次: $lastName", maxLines = 1) }
+                OutlinedButton(onClick = onConnectLast) { Text(stringResource(R.string.action_connect_last, lastName), maxLines = 1) }
             }
         }
         HorizontalDivider()
-        Text("没有椭圆机？可以先用演示模式体验全部功能。", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-        FilledTonalButton(onClick = onDemo) { Text("演示模式 Demo（无需设备）") }
+        Text(stringResource(R.string.hint_no_machine), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        FilledTonalButton(onClick = onDemo) { Text(stringResource(R.string.action_demo)) }
     }
 }
 
@@ -426,9 +443,13 @@ private fun DeviceRow(d: FoundDevice, highlight: Boolean, onClick: () -> Unit) {
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(d.name ?: "(无名称)", fontWeight = FontWeight.Medium)
+                Text(d.name ?: stringResource(R.string.label_no_name), fontWeight = FontWeight.Medium)
                 Text(
-                    d.address + if (d.serviceHints.isNotEmpty()) "  服务: " + d.serviceHints.joinToString(",") else "",
+                    d.address + if (d.serviceHints.isNotEmpty()) {
+                        "  " + stringResource(R.string.label_services, d.serviceHints.joinToString(","))
+                    } else {
+                        ""
+                    },
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -441,28 +462,30 @@ private fun DeviceRow(d: FoundDevice, highlight: Boolean, onClick: () -> Unit) {
 private fun SettingsCard(controller: EllipticalController) {
     var expanded by remember { mutableStateOf(false) }
     val s = controller.settings
-    SectionCard("设置") {
-        TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "收起" else "展开（协议、体重、热量、最大阻力）") }
+    SectionCard(stringResource(R.string.card_settings)) {
+        TextButton(onClick = { expanded = !expanded }) {
+            Text(if (expanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_expand_settings))
+        }
         if (!expanded) return@SectionCard
 
         var protocol by remember { mutableStateOf(s.protocolChoice) }
-        Text("协议（连接时生效）", fontWeight = FontWeight.Medium)
+        Text(stringResource(R.string.settings_protocol), fontWeight = FontWeight.Medium)
         ProtocolChoice.entries.forEach { c ->
-            RadioRow(c.label, protocol == c) { protocol = c; s.protocolChoice = c }
+            RadioRow(stringResource(c.labelRes), protocol == c) { protocol = c; s.protocolChoice = c }
         }
         HorizontalDivider()
 
         var enc by remember { mutableStateOf(s.ftmsEncoding) }
-        Text("FTMS 阻力编码", fontWeight = FontWeight.Medium)
+        Text(stringResource(R.string.settings_ftms_encoding), fontWeight = FontWeight.Medium)
         FtmsResistanceEncoding.entries.forEach { e ->
-            RadioRow(e.label, enc == e) { enc = e; s.ftmsEncoding = e }
+            RadioRow(stringResource(e.labelRes), enc == e) { enc = e; s.ftmsEncoding = e }
         }
         HorizontalDivider()
 
         var algo by remember { mutableStateOf(s.calorieAlgorithm) }
-        Text("热量算法（机器不上报热量时使用）", fontWeight = FontWeight.Medium)
+        Text(stringResource(R.string.settings_calorie_algorithm), fontWeight = FontWeight.Medium)
         CalorieAlgorithm.entries.forEach { a ->
-            RadioRow(a.label, algo == a) { algo = a; s.calorieAlgorithm = a }
+            RadioRow(stringResource(a.labelRes), algo == a) { algo = a; s.calorieAlgorithm = a }
         }
         HorizontalDivider()
 
@@ -473,7 +496,7 @@ private fun SettingsCard(controller: EllipticalController) {
         OutlinedTextField(
             value = weight,
             onValueChange = { weight = it.filter(Char::isDigit).take(3) },
-            label = { Text("体重 kg（环通主板和老算法热量需要）") },
+            label = { Text(stringResource(R.string.settings_weight)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -481,7 +504,7 @@ private fun SettingsCard(controller: EllipticalController) {
         OutlinedTextField(
             value = maxOverride,
             onValueChange = { maxOverride = it.filter(Char::isDigit).take(3) },
-            label = { Text("最大阻力覆盖（0 = 按设备/官方表）") },
+            label = { Text(stringResource(R.string.settings_max_override)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -489,7 +512,7 @@ private fun SettingsCard(controller: EllipticalController) {
         OutlinedTextField(
             value = factor,
             onValueChange = { factor = it.filter(Char::isDigit).take(3) },
-            label = { Text("热量系数 %（30–200，校准用，默认 100）") },
+            label = { Text(stringResource(R.string.settings_calorie_factor)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -497,7 +520,7 @@ private fun SettingsCard(controller: EllipticalController) {
         OutlinedTextField(
             value = autoPause,
             onValueChange = { autoPause = it.filter(Char::isDigit).take(3) },
-            label = { Text("停止踩动多少秒后自动暂停（0 = 不自动暂停，官方 60）") },
+            label = { Text(stringResource(R.string.settings_auto_pause)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -511,13 +534,13 @@ private fun SettingsCard(controller: EllipticalController) {
             factor = s.calorieFactorPercent.toString()
             autoPause = s.autoPauseSec.toString()
             controller.refreshRange()
-        }) { Text("保存") }
+        }) { Text(stringResource(R.string.action_save)) }
         HorizontalDivider()
 
         var reconnect by remember { mutableStateOf(s.autoReconnect) }
-        SwitchRow("断线自动重连", reconnect) { reconnect = it; s.autoReconnect = it }
+        SwitchRow(stringResource(R.string.settings_auto_reconnect), reconnect) { reconnect = it; s.autoReconnect = it }
         var verbose by remember { mutableStateOf(controller.verboseNotify) }
-        SwitchRow("日志记录所有通知帧（调试用）", verbose) { verbose = it; controller.verboseNotify = it }
+        SwitchRow(stringResource(R.string.settings_verbose), verbose) { verbose = it; controller.verboseNotify = it }
     }
 }
 
@@ -544,11 +567,15 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
 private fun DebugCard(controller: EllipticalController, logs: List<String>, connected: Boolean) {
     var expanded by remember { mutableStateOf(false) }
     val clipboard = LocalClipboardManager.current
-    SectionCard("日志与调试") {
+    SectionCard(stringResource(R.string.card_debug)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "收起" else "展开") }
-            TextButton(onClick = { clipboard.setText(AnnotatedString(logs.joinToString("\n"))) }) { Text("复制日志") }
-            TextButton(onClick = { controller.clearLogs() }) { Text("清空") }
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(if (expanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_expand))
+            }
+            TextButton(onClick = { clipboard.setText(AnnotatedString(logs.joinToString("\n"))) }) {
+                Text(stringResource(R.string.action_copy_log))
+            }
+            TextButton(onClick = { controller.clearLogs() }) { Text(stringResource(R.string.action_clear)) }
         }
         if (!expanded) {
             logs.lastOrNull()?.let { Text(it, fontFamily = FontFamily.Monospace, fontSize = 11.sp, maxLines = 2) }
@@ -558,24 +585,25 @@ private fun DebugCard(controller: EllipticalController, logs: List<String>, conn
             var ch by remember { mutableStateOf("880f") }
             var hex by remember { mutableStateOf("") }
             var result by remember { mutableStateOf<String?>(null) }
-            Text("发送原始指令（高级）", fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.debug_raw_title), fontWeight = FontWeight.Medium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = ch,
                     onValueChange = { ch = it.trim() },
-                    label = { Text("特征") },
+                    label = { Text(stringResource(R.string.debug_characteristic)) },
                     singleLine = true,
                     modifier = Modifier.width(96.dp),
                 )
                 OutlinedTextField(
                     value = hex,
                     onValueChange = { hex = it },
-                    label = { Text("十六进制，如 02 01 05") },
+                    label = { Text(stringResource(R.string.debug_hex_hint)) },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                 )
             }
-            Button(onClick = { result = controller.sendRaw(ch, hex) ?: "已加入发送队列" }) { Text("发送") }
+            val queued = stringResource(R.string.debug_queued)
+            Button(onClick = { result = controller.sendRaw(ch, hex) ?: queued }) { Text(stringResource(R.string.action_send)) }
             result?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             HorizontalDivider()
         }

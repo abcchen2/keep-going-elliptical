@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 中文。默认（英文）在 values/strings.xml，两份文件保持同样的顺序。 -->
+<resources>
+    <string name="app_name">椭圆机续命</string>
+    <string name="app_subtitle">Keep Going Elliptical · 无需登录，直连莫比 (Mobi) 椭圆机调阻力</string>
+
+    <!-- 连接状态 -->
+    <string name="phase_idle">未连接</string>
+    <string name="phase_scanning">扫描中</string>
+    <string name="phase_connecting">连接中</string>
+    <string name="phase_setting_up">初始化设备</string>
+    <string name="phase_ready">已连接</string>
+    <string name="phase_reconnecting">重新连接中</string>
+
+    <!-- 协议 -->
+    <string name="protocol_v2">莫比 2.0 协议 (服务 0x8800)</string>
+    <string name="protocol_v1">莫比 1.0 协议 (FFE0, 0xAB 帧)</string>
+    <string name="protocol_huantong">环通协议 (FFF0, 每秒心跳)</string>
+    <string name="protocol_ftms">FTMS 标准协议 (0x1826, 莫比变体)</string>
+    <string name="protocol_demo">演示模式 Demo：模拟椭圆机，未连接真实设备</string>
+    <string name="choice_auto">自动识别</string>
+    <string name="choice_v2">强制 莫比 2.0</string>
+    <string name="choice_v1">强制 莫比 1.0</string>
+    <string name="choice_huantong">强制 环通</string>
+    <string name="choice_ftms">强制 FTMS</string>
+    <string name="ftms_enc_uint8_x10">官方: 1 字节, 档位×10</string>
+    <string name="ftms_enc_sint16_x10">2 字节 SINT16, 档位×10</string>
+    <string name="ftms_enc_uint8_x1">1 字节, 档位原值</string>
+
+    <!-- 锻炼 -->
+    <string name="cmd_start">开始</string>
+    <string name="cmd_pause">暂停</string>
+    <string name="cmd_stop">停止</string>
+    <string name="calorie_new">官方新算法（推荐）</string>
+    <string name="calorie_old">官方老算法（高阻力时偏高）</string>
+    <string name="status_idle">未开始</string>
+    <string name="status_running">运动中</string>
+    <string name="status_auto_paused">自动暂停（没有踩动）</string>
+    <string name="status_paused">已暂停</string>
+    <string name="status_finished">已结束</string>
+    <string name="source_machine">机器上报</string>
+    <string name="source_formula">按官方公式计算</string>
+
+    <!-- 阻力范围来源 -->
+    <string name="range_default">默认值</string>
+    <string name="range_manual">手动设置</string>
+    <string name="src_device_8806">设备 0x8806</string>
+    <string name="src_device_2ad6">设备 0x2AD6</string>
+    <string name="src_official_table">官方型号表</string>
+    <string name="src_ht_default">官方默认 (环通无阻力回读)</string>
+    <string name="src_demo">演示模式</string>
+
+    <!-- 机型与阻力模式 -->
+    <string name="type_rowing">划船机</string>
+    <string name="type_bike">动感单车</string>
+    <string name="type_elliptical">椭圆机</string>
+    <string name="type_treadmill">跑步机</string>
+    <string name="type_unknown">未知类型(%1$d)</string>
+    <string name="machine_desc_subtype">%1$s 子类型 %2$d</string>
+    <string name="mode_0">官方标记为不可读写</string>
+    <string name="mode_1">只写</string>
+    <string name="mode_2">只读</string>
+    <string name="mode_3">可读可写</string>
+    <string name="mode_unknown">未知</string>
+    <string name="ht_desc_elliptical">椭圆机 (环通主板)</string>
+    <string name="ht_desc_bike">单车 (环通主板)</string>
+    <string name="ftms_desc_elliptical">FTMS 椭圆机</string>
+    <string name="ftms_desc_generic">FTMS 健身设备</string>
+    <string name="demo_desc">模拟椭圆机 (Demo)</string>
+    <string name="v1_waiting_frame">等待设备状态帧（请踩动椭圆机）</string>
+    <string name="run_stopped">停止</string>
+    <string name="run_running">运行</string>
+    <string name="run_paused">暂停</string>
+    <string name="run_state_n">状态 %1$d</string>
+
+    <!-- 状态卡片里的错误 -->
+    <string name="err_unknown_protocol">这不是已知的莫比设备协议</string>
+    <string name="err_disconnected">连接已断开</string>
+
+    <!-- 提示 -->
+    <string name="toast_need_permission">需要蓝牙权限才能连接椭圆机</string>
+    <string name="toast_enable_bt">请先在系统设置中打开蓝牙</string>
+
+    <!-- 主界面：状态 -->
+    <string name="card_status">状态</string>
+    <string name="action_disconnect">断开</string>
+    <string name="label_device">设备: %1$s  %2$s</string>
+    <string name="label_protocol">协议: %1$s</string>
+    <string name="label_machine">机型: %1$s</string>
+    <string name="label_model">型号 %1$s</string>
+    <string name="label_firmware">固件 %1$s</string>
+    <string name="label_battery">电量 %1$d%%</string>
+
+    <!-- 主界面：阻力 -->
+    <string name="card_resistance">阻力</string>
+    <string name="label_machine_feedback">机器反馈: %1$s</string>
+    <string name="label_range">范围 %1$d–%2$d（%3$s）</string>
+    <string name="label_range_mode">%1$s · 官方标记: %2$s</string>
+    <string name="hint_setting_up">设备初始化中，调节会在就绪后发送</string>
+    <string name="hint_huantong">环通主板没有阻力回读，本 App 每秒发送一次当前档位（与官方一致），请保持 App 在前台。</string>
+    <string name="hint_v1">1.0 盒子需要先收到机器状态帧，请踩动几圈椭圆机。</string>
+
+    <!-- 主界面：锻炼 -->
+    <string name="card_workout">本次锻炼 · %1$s</string>
+    <string name="metric_distance">里程</string>
+    <string name="metric_calories">热量 kcal</string>
+    <string name="metric_heart_rate">心率</string>
+    <string name="metric_cadence">踏频 rpm</string>
+    <string name="metric_speed">速度 km/h</string>
+    <string name="metric_burn_rate">消耗 kcal/分</string>
+    <string name="stat_avg_rpm">平均踏频 %1$.0f</string>
+    <string name="stat_avg_resistance">平均阻力 %1$.1f</string>
+    <string name="stat_avg_hr">平均心率 %1$d</string>
+    <string name="stat_max_hr">最高心率 %1$d</string>
+    <string name="label_sources">里程: %1$s · 热量: %2$s</string>
+    <string name="action_start">开始</string>
+    <string name="action_pause">暂停</string>
+    <string name="action_resume">继续</string>
+    <string name="action_finish">结束</string>
+    <string name="action_close">关闭</string>
+    <string name="action_new_workout">开始新锻炼</string>
+    <string name="hint_auto_start">开始踩动会自动开始计时，停止踩动一段时间会自动暂停。</string>
+    <string name="label_machine_state">机器状态: %1$s</string>
+    <string name="unit_km">%1$.2f 公里</string>
+    <string name="unit_m">%1$.0f 米</string>
+
+    <!-- 主界面：演示模式 -->
+    <string name="card_demo">演示模式</string>
+    <string name="hint_demo">当前是模拟椭圆机：踏频随阻力变化，心率随强度上升，阻力 300 毫秒后回读。关掉“正在踩动”可以看到自动暂停。</string>
+    <string name="label_pedalling">正在踩动</string>
+
+    <!-- 主界面：锻炼记录 -->
+    <string name="card_history">锻炼记录</string>
+    <string name="history_line">%1$s  %2$s  %3$s  %4$.0f 千卡</string>
+    <string name="action_collapse">收起</string>
+    <string name="action_show_all">全部 %1$d 条</string>
+    <string name="action_clear_history">清空记录</string>
+
+    <!-- 主界面：连接 -->
+    <string name="card_connect">连接椭圆机</string>
+    <string name="hint_connect">先给椭圆机通电并踩几圈唤醒蓝牙盒子。不要同时打开官方 App。</string>
+    <string name="action_stop_scan">停止扫描</string>
+    <string name="action_scan">扫描设备</string>
+    <string name="action_connect_last">连接上次: %1$s</string>
+    <string name="hint_no_machine">没有椭圆机？可以先用演示模式体验全部功能。</string>
+    <string name="action_demo">演示模式 Demo（无需设备）</string>
+    <string name="label_no_name">(无名称)</string>
+    <string name="label_services">服务: %1$s</string>
+
+    <!-- 主界面：设置 -->
+    <string name="card_settings">设置</string>
+    <string name="action_expand_settings">展开（协议、体重、热量、最大阻力）</string>
+    <string name="settings_protocol">协议（连接时生效）</string>
+    <string name="settings_ftms_encoding">FTMS 阻力编码</string>
+    <string name="settings_calorie_algorithm">热量算法（机器不上报热量时使用）</string>
+    <string name="settings_weight">体重 kg（环通主板和老算法热量需要）</string>
+    <string name="settings_max_override">最大阻力覆盖（0 = 按设备/官方表）</string>
+    <string name="settings_calorie_factor">热量系数，百分比（30–200，校准用，默认 100）</string>
+    <string name="settings_auto_pause">停止踩动多少秒后自动暂停（0 = 不自动暂停，官方 60）</string>
+    <string name="action_save">保存</string>
+    <string name="settings_auto_reconnect">断线自动重连</string>
+    <string name="settings_verbose">日志记录所有通知帧（调试用）</string>
+
+    <!-- 主界面：日志与调试 -->
+    <string name="card_debug">日志与调试</string>
+    <string name="action_expand">展开</string>
+    <string name="action_copy_log">复制日志</string>
+    <string name="action_clear">清空</string>
+    <string name="debug_raw_title">发送原始指令（高级）</string>
+    <string name="debug_characteristic">特征</string>
+    <string name="debug_hex_hint">十六进制，如 02 01 05</string>
+    <string name="action_send">发送</string>
+    <string name="debug_queued">已加入发送队列</string>
+    <string name="raw_bad_uuid">UUID 格式不对</string>
+    <string name="raw_bad_length">十六进制长度不对</string>
+    <string name="raw_bad_char">包含非十六进制字符</string>
+    <string name="raw_no_char">设备上没有特征 %1$s</string>
+
+    <!-- 日志：控制器 -->
+    <string name="log_scan_failed">扫描失败 code=%1$d</string>
+    <string name="log_bt_off">蓝牙未开启</string>
+    <string name="log_scan_start">开始扫描（12 秒）</string>
+    <string name="log_scan_done">扫描结束，找到 %1$d 个设备</string>
+    <string name="log_invalid_address">无效的设备地址 %1$s</string>
+    <string name="log_link_connected">已建立连接，正在发现服务</string>
+    <string name="log_unknown_protocol">未识别的蓝牙协议：没有 8800 / FFE0 / FFF0 / FFC0 / 1826 服务</string>
+    <string name="log_protocol">协议: %1$s</string>
+    <string name="log_protocol_forced">协议: %1$s（手动指定，自动识别结果=%2$s）</string>
+    <string name="none">无</string>
+    <string name="log_restore_level">重连后恢复阻力 %1$d</string>
+    <string name="log_demo_link_closed">蓝牙连接已关闭（演示模式继续运行）</string>
+    <string name="log_disconnected">连接断开 status=%1$d</string>
+    <string name="log_disconnected_user">连接断开 status=%1$d（主动断开）</string>
+    <string name="log_reconnect">%1$.1f 秒后第 %2$d 次重连</string>
+    <string name="log_notify">通知 %1$s: %2$s</string>
+    <string name="log_level_pending">设备未连接，阻力 %1$d 将在连接后发送</string>
+    <string name="log_set_level">设置阻力 -> %1$d</string>
+    <string name="log_raw_write">原始写入 %1$s [%2$s] %3$s</string>
+    <string name="ok">成功</string>
+    <string name="failed">失败</string>
+
+    <!-- 日志：GATT -->
+    <string name="log_gatt_timeout">超时: %1$s</string>
+    <string name="log_gatt_connecting">连接 %1$s …</string>
+    <string name="log_gatt_set_notify_failed">setCharacteristicNotification 失败: %1$s</string>
+    <string name="log_gatt_no_cccd">%1$s 没有 CCCD，直接视为已订阅</string>
+    <string name="log_gatt_not_connected">未连接，丢弃: %1$s</string>
+    <string name="log_gatt_permission">权限不足: %1$s</string>
+    <string name="log_gatt_start_failed">发起失败: %1$s</string>
+    <string name="log_gatt_write_failed">写入失败: %1$s</string>
+    <string name="log_gatt_cccd_failed">订阅失败: %1$s</string>
+    <string name="log_gatt_connect_error">连接异常 status=%1$d</string>
+    <string name="log_gatt_discover_start_failed">discoverServices 发起失败</string>
+    <string name="log_gatt_discover_failed">服务发现失败 status=%1$d</string>
+    <string name="log_gatt_service">服务 %1$s: %2$s</string>
+    <string name="log_gatt_mtu">MTU=%1$d</string>
+    <string name="log_gatt_mtu_failed">MTU 协商失败，继续使用默认值</string>
+
+    <!-- 日志：协议公共部分 -->
+    <string name="log_range">阻力范围 %1$d..%2$d（%3$s）</string>
+    <string name="log_range_mode">阻力范围 %1$d..%2$d（%3$s），模式：%4$s</string>
+    <string name="log_model">型号: %1$s</string>
+    <string name="log_firmware">固件: %1$s</string>
+
+    <!-- 日志：2.0 盒子 -->
+    <string name="log_v2_upload_mode">8801 数据模式=%1$d</string>
+    <string name="log_v2_upload_mode_start">8801 数据模式=%1$d（需要开始指令）</string>
+    <string name="log_v2_range_raw">8806 阻力能力: %1$s</string>
+    <string name="warn_no_880f">警告: 没有找到 0x880F 控制特征，无法调阻力</string>
+    <string name="log_v2_sport_type">8802 设备类型=%1$d 子类型=%2$d（%3$s）</string>
+    <string name="err_no_880f">没有 0x880F，无法设置阻力</string>
+    <string name="log_v2_no_start">8801 未声明需要开始/停止指令 (模式=%1$d)，与官方 App 一致不发送</string>
+    <string name="log_v2_no_unlock">没有 0x88FF 解锁特征，直接发送</string>
+    <string name="log_v2_unlock">发送写权限解锁 11 82 07 -> 0x88FF</string>
+    <string name="log_v2_unlock_failed">解锁写入失败，仍尝试发送命令（下次会重新解锁）</string>
+    <string name="log_v2_error">88E1 设备错误: %1$s</string>
+
+    <!-- 日志：1.0 盒子 -->
+    <string name="warn_no_ffe3">警告: 没有找到 FFE3 写特征，无法调阻力</string>
+    <string name="log_v1_frame">状态帧: 类型=%1$d 子类型=%2$d（%3$s）原始=%4$s</string>
+    <string name="log_v1_sending_queued">已收到状态帧，发送之前排队的阻力 %1$d</string>
+    <string name="err_no_ffe3">没有 FFE3，无法设置阻力</string>
+    <string name="log_v1_queued">还没收到设备状态帧，阻力 %1$d 将在收到后自动发送（请踩动椭圆机唤醒设备）</string>
+
+    <!-- 日志：环通 -->
+    <string name="log_ht_no_fff1">没有 FFF1 通知特征，直接开始心跳</string>
+    <string name="log_ht_fff1_failed">FFF1 订阅失败，仍然开始心跳</string>
+    <string name="log_ht_no_fff2">没有 FFF2 写特征，无法控制阻力</string>
+    <string name="log_ht_weight">发送体重 %1$d kg</string>
+
+    <!-- 日志：FTMS -->
+    <string name="warn_no_2ad9">警告: 没有 0x2AD9 控制点，无法调阻力</string>
+    <string name="log_ftms_request_control">请求控制权 00 -> 0x2AD9</string>
+    <string name="log_ftms_no_target">提示: 设备未声明支持阻力目标设置，仍会尝试发送</string>
+    <string name="log_ftms_range_raw">2AD6 阻力范围: %1$s</string>
+    <string name="log_ftms_range_integer">2AD6 看起来是整数档位，按原值使用</string>
+    <string name="err_no_2ad9">没有 0x2AD9，无法设置阻力</string>
+    <string name="log_ftms_truncated">档位 %1$d ×10 超过 1 字节，已截断为 25.5；如需更高档位请切换为 SINT16 编码</string>
+    <string name="log_ftms_training_status">训练状态: %1$d</string>
+    <string name="ftms_result_1">成功</string>
+    <string name="ftms_result_2">不支持该指令</string>
+    <string name="ftms_result_3">参数无效</string>
+    <string name="ftms_result_4">执行失败</string>
+    <string name="ftms_result_5">没有控制权</string>
+    <string name="ftms_result_n">结果 %1$d</string>
+    <string name="log_ftms_response">2AD9 应答: 指令 0x%1$02X -> %2$s</string>
+    <string name="log_ftms_retry">重新请求控制权后重发</string>
+    <string name="log_ftms_target_ack">设备确认目标阻力 %1$.1f</string>
+    <string name="log_ftms_control_lost">设备收回了控制权，下次调节会重新请求</string>
+    <string name="log_ftms_status">2ADA 状态: %1$s</string>
+    <string name="log_ftms_flag_size">2ACE 标志位长度按实际数据调整为 %1$d 字节</string>
+
+    <!-- 日志：演示模式 -->
+    <string name="log_demo_started">演示模式已启动：模拟踏频、心率和阻力回读，不使用蓝牙</string>
+
+    <!-- 日志：锻炼 -->
+    <string name="log_workout_started">锻炼开始</string>
+    <string name="log_workout_paused">锻炼暂停</string>
+    <string name="log_workout_resumed">锻炼继续</string>
+    <string name="log_workout_finished">锻炼结束: %1$d 秒, %2$.0f 米, %3$.1f 千卡</string>
+    <string name="log_auto_start">检测到踩动，自动开始计时</string>
+    <string name="log_auto_resume">重新踩动，继续计时</string>
+    <string name="log_disconnect_pause">设备断开，锻炼自动暂停</string>
+    <string name="log_idle_pause">%1$d 秒没有踩动，自动暂停</string>
+</resources>

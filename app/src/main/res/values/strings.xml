@@ -1,4 +1,287 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Default (English). Chinese translation: values-zh/strings.xml. Keep both files in the same order. -->
 <resources>
-    <string name="app_name">椭圆机续命</string>
+    <string name="app_name">Keep Going Elliptical</string>
+    <string name="app_subtitle">Control Mobi ellipticals directly over Bluetooth, no login needed</string>
+
+    <!-- Connection phase -->
+    <string name="phase_idle">Not connected</string>
+    <string name="phase_scanning">Scanning</string>
+    <string name="phase_connecting">Connecting</string>
+    <string name="phase_setting_up">Setting up device</string>
+    <string name="phase_ready">Connected</string>
+    <string name="phase_reconnecting">Reconnecting</string>
+
+    <!-- Protocols -->
+    <string name="protocol_v2">Mobi 2.0 protocol (service 0x8800)</string>
+    <string name="protocol_v1">Mobi 1.0 protocol (FFE0, 0xAB frames)</string>
+    <string name="protocol_huantong">HuanTong protocol (FFF0, 1 Hz keep-alive)</string>
+    <string name="protocol_ftms">FTMS (0x1826, Mobi variant)</string>
+    <string name="protocol_demo">Demo: simulated elliptical, no real device</string>
+    <string name="choice_auto">Auto-detect</string>
+    <string name="choice_v2">Force Mobi 2.0</string>
+    <string name="choice_v1">Force Mobi 1.0</string>
+    <string name="choice_huantong">Force HuanTong</string>
+    <string name="choice_ftms">Force FTMS</string>
+    <string name="ftms_enc_uint8_x10">Official: 1 byte, level × 10</string>
+    <string name="ftms_enc_sint16_x10">2 bytes SINT16, level × 10</string>
+    <string name="ftms_enc_uint8_x1">1 byte, raw level</string>
+
+    <!-- Workout enums -->
+    <string name="cmd_start">Start</string>
+    <string name="cmd_pause">Pause</string>
+    <string name="cmd_stop">Stop</string>
+    <string name="calorie_new">Official new formula (recommended)</string>
+    <string name="calorie_old">Official old formula (runs high at high levels)</string>
+    <string name="status_idle">Not started</string>
+    <string name="status_running">Running</string>
+    <string name="status_auto_paused">Auto-paused (not pedalling)</string>
+    <string name="status_paused">Paused</string>
+    <string name="status_finished">Finished</string>
+    <string name="source_none" translatable="false">—</string>
+    <string name="source_machine">reported by machine</string>
+    <string name="source_formula">official formula</string>
+
+    <!-- Resistance range sources -->
+    <string name="range_default">default</string>
+    <string name="range_manual">manual</string>
+    <string name="src_device_8806">device 0x8806</string>
+    <string name="src_device_2ad6">device 0x2AD6</string>
+    <string name="src_official_table">official model table</string>
+    <string name="src_ht_default">official default (HuanTong has no read-back)</string>
+    <string name="src_demo">demo mode</string>
+
+    <!-- Machine types and resistance modes -->
+    <string name="type_rowing">Rower</string>
+    <string name="type_bike">Spin bike</string>
+    <string name="type_elliptical">Elliptical</string>
+    <string name="type_treadmill">Treadmill</string>
+    <string name="type_unknown">Unknown type (%1$d)</string>
+    <string name="machine_desc_model" translatable="false">%1$s %2$s</string>
+    <string name="machine_desc_subtype">%1$s, sub type %2$d</string>
+    <string name="mode_0">marked not readable/writable by the official app</string>
+    <string name="mode_1">write only</string>
+    <string name="mode_2">read only</string>
+    <string name="mode_3">read and write</string>
+    <string name="mode_unknown">unknown</string>
+    <string name="ht_desc_elliptical">Elliptical (HuanTong board)</string>
+    <string name="ht_desc_bike">Bike (HuanTong board)</string>
+    <string name="ftms_desc_elliptical">FTMS elliptical</string>
+    <string name="ftms_desc_generic">FTMS fitness machine</string>
+    <string name="demo_desc">Simulated elliptical (Demo)</string>
+    <string name="v1_waiting_frame">Waiting for a status frame (pedal the elliptical)</string>
+    <string name="run_stopped">Stopped</string>
+    <string name="run_running">Running</string>
+    <string name="run_paused">Paused</string>
+    <string name="run_state_n">State %1$d</string>
+
+    <!-- Errors shown in the status card -->
+    <string name="err_unknown_protocol">This is not a known Mobi protocol</string>
+    <string name="err_disconnected">Connection lost</string>
+
+    <!-- Toasts -->
+    <string name="toast_need_permission">Bluetooth permission is needed to connect to the elliptical</string>
+    <string name="toast_enable_bt">Please turn on Bluetooth in system settings</string>
+
+    <!-- Main screen: status -->
+    <string name="card_status">Status</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="label_device">Device: %1$s  %2$s</string>
+    <string name="label_protocol">Protocol: %1$s</string>
+    <string name="label_machine">Machine: %1$s</string>
+    <string name="label_model">Model %1$s</string>
+    <string name="label_firmware">Firmware %1$s</string>
+    <string name="label_battery">Battery %1$d%%</string>
+
+    <!-- Main screen: resistance -->
+    <string name="card_resistance">Resistance</string>
+    <string name="label_machine_feedback">Machine feedback: %1$s</string>
+    <string name="label_range">Range %1$d–%2$d (%3$s)</string>
+    <string name="label_range_mode">%1$s · official flag: %2$s</string>
+    <string name="hint_setting_up">Device is initialising; changes are sent once it is ready</string>
+    <string name="hint_huantong">The HuanTong board does not report resistance back. This app resends the current level every second (like the official app), so keep it in the foreground.</string>
+    <string name="hint_v1">A 1.0 box needs a status frame first. Pedal a few strokes.</string>
+
+    <!-- Main screen: workout -->
+    <string name="card_workout">This workout · %1$s</string>
+    <string name="metric_distance">Distance</string>
+    <string name="metric_calories">Calories kcal</string>
+    <string name="metric_heart_rate">Heart rate</string>
+    <string name="metric_cadence">Cadence rpm</string>
+    <string name="metric_speed">Speed km/h</string>
+    <string name="metric_burn_rate">Burn kcal/min</string>
+    <string name="stat_avg_rpm">Avg cadence %1$.0f</string>
+    <string name="stat_avg_resistance">Avg resistance %1$.1f</string>
+    <string name="stat_avg_hr">Avg HR %1$d</string>
+    <string name="stat_max_hr">Max HR %1$d</string>
+    <string name="label_sources">Distance: %1$s · Calories: %2$s</string>
+    <string name="action_start">Start</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_finish">Finish</string>
+    <string name="action_close">Close</string>
+    <string name="action_new_workout">New workout</string>
+    <string name="hint_auto_start">The timer starts when you start pedalling and pauses itself when you stop for a while.</string>
+    <string name="label_machine_state">Machine state: %1$s</string>
+    <string name="unit_km">%1$.2f km</string>
+    <string name="unit_m">%1$.0f m</string>
+
+    <!-- Main screen: demo -->
+    <string name="card_demo">Demo mode</string>
+    <string name="hint_demo">This is a simulated elliptical: cadence follows resistance, heart rate rises with effort, and resistance is echoed after 300 ms. Turn off \"Pedalling\" to see auto-pause.</string>
+    <string name="label_pedalling">Pedalling</string>
+
+    <!-- Main screen: history -->
+    <string name="card_history">Workout history</string>
+    <string name="history_line">%1$s  %2$s  %3$s  %4$.0f kcal</string>
+    <string name="action_collapse">Collapse</string>
+    <string name="action_show_all">Show all %1$d</string>
+    <string name="action_clear_history">Clear history</string>
+
+    <!-- Main screen: connect -->
+    <string name="card_connect">Connect the elliptical</string>
+    <string name="hint_connect">Power on the elliptical and pedal a few strokes to wake the Bluetooth box. Do not run the official app at the same time.</string>
+    <string name="action_stop_scan">Stop scan</string>
+    <string name="action_scan">Scan for devices</string>
+    <string name="action_connect_last">Connect last: %1$s</string>
+    <string name="hint_no_machine">No elliptical? Try every feature in demo mode first.</string>
+    <string name="action_demo">Demo mode (no device needed)</string>
+    <string name="label_no_name">(no name)</string>
+    <string name="label_services">services: %1$s</string>
+
+    <!-- Main screen: settings -->
+    <string name="card_settings">Settings</string>
+    <string name="action_expand_settings">Expand (protocol, weight, calories, max resistance)</string>
+    <string name="settings_protocol">Protocol (applies on connect)</string>
+    <string name="settings_ftms_encoding">FTMS resistance encoding</string>
+    <string name="settings_calorie_algorithm">Calorie formula (used when the machine does not report calories)</string>
+    <string name="settings_weight">Weight kg (needed by HuanTong boards and the old formula)</string>
+    <string name="settings_max_override">Max resistance override (0 = from device / official table)</string>
+    <string name="settings_calorie_factor">Calorie factor in percent (30–200, for calibration, default 100)</string>
+    <string name="settings_auto_pause">Seconds without pedalling before auto-pause (0 = never, official 60)</string>
+    <string name="action_save">Save</string>
+    <string name="settings_auto_reconnect">Reconnect automatically</string>
+    <string name="settings_verbose">Log every notification frame (debugging)</string>
+
+    <!-- Main screen: log & debug -->
+    <string name="card_debug">Log &amp; debug</string>
+    <string name="action_expand">Expand</string>
+    <string name="action_copy_log">Copy log</string>
+    <string name="action_clear">Clear</string>
+    <string name="debug_raw_title">Send raw command (advanced)</string>
+    <string name="debug_characteristic">Characteristic</string>
+    <string name="debug_hex_hint">Hex, e.g. 02 01 05</string>
+    <string name="action_send">Send</string>
+    <string name="debug_queued">Queued for sending</string>
+    <string name="raw_bad_uuid">Invalid UUID</string>
+    <string name="raw_bad_length">Invalid hex length</string>
+    <string name="raw_bad_char">Contains non-hex characters</string>
+    <string name="raw_no_char">The device has no characteristic %1$s</string>
+
+    <!-- Log: controller -->
+    <string name="log_scan_failed">Scan failed code=%1$d</string>
+    <string name="log_bt_off">Bluetooth is off</string>
+    <string name="log_scan_start">Scanning (12 s)</string>
+    <string name="log_scan_done">Scan finished, devices found: %1$d</string>
+    <string name="log_invalid_address">Invalid device address %1$s</string>
+    <string name="log_link_connected">Connected, discovering services</string>
+    <string name="log_unknown_protocol">Unknown Bluetooth protocol: no 8800 / FFE0 / FFF0 / FFC0 / 1826 service</string>
+    <string name="log_protocol">Protocol: %1$s</string>
+    <string name="log_protocol_forced">Protocol: %1$s (forced; auto-detected: %2$s)</string>
+    <string name="none">none</string>
+    <string name="log_restore_level">Restoring resistance %1$d after reconnect</string>
+    <string name="log_demo_link_closed">Bluetooth link closed (demo mode keeps running)</string>
+    <string name="log_disconnected">Disconnected status=%1$d</string>
+    <string name="log_disconnected_user">Disconnected status=%1$d (by user)</string>
+    <string name="log_reconnect">Reconnect attempt %2$d in %1$.1f s</string>
+    <string name="log_notify">Notify %1$s: %2$s</string>
+    <string name="log_level_pending">Not connected; level %1$d will be sent after connecting</string>
+    <string name="log_set_level">Set resistance -> %1$d</string>
+    <string name="log_raw_write">Raw write %1$s [%2$s] %3$s</string>
+    <string name="ok">OK</string>
+    <string name="failed">failed</string>
+
+    <!-- Log: GATT -->
+    <string name="log_gatt_timeout">Timeout: %1$s</string>
+    <string name="log_gatt_connecting">Connecting %1$s …</string>
+    <string name="log_gatt_set_notify_failed">setCharacteristicNotification failed: %1$s</string>
+    <string name="log_gatt_no_cccd">%1$s has no CCCD, treating it as subscribed</string>
+    <string name="log_gatt_not_connected">Not connected, dropped: %1$s</string>
+    <string name="log_gatt_permission">Missing permission: %1$s</string>
+    <string name="log_gatt_start_failed">Could not start: %1$s</string>
+    <string name="log_gatt_write_failed">Write failed: %1$s</string>
+    <string name="log_gatt_cccd_failed">Subscribe failed: %1$s</string>
+    <string name="log_gatt_connect_error">Connection error status=%1$d</string>
+    <string name="log_gatt_discover_start_failed">discoverServices could not start</string>
+    <string name="log_gatt_discover_failed">Service discovery failed status=%1$d</string>
+    <string name="log_gatt_service">Service %1$s: %2$s</string>
+    <string name="log_gatt_mtu">MTU=%1$d</string>
+    <string name="log_gatt_mtu_failed">MTU negotiation failed, using the default</string>
+
+    <!-- Log: shared protocol helpers -->
+    <string name="log_range">Resistance range %1$d..%2$d (%3$s)</string>
+    <string name="log_range_mode">Resistance range %1$d..%2$d (%3$s), mode: %4$s</string>
+    <string name="log_model">Model: %1$s</string>
+    <string name="log_firmware">Firmware: %1$s</string>
+
+    <!-- Log: 2.0 box -->
+    <string name="log_v2_upload_mode">8801 upload mode=%1$d</string>
+    <string name="log_v2_upload_mode_start">8801 upload mode=%1$d (needs start command)</string>
+    <string name="log_v2_range_raw">8806 resistance capabilities: %1$s</string>
+    <string name="warn_no_880f">Warning: control characteristic 0x880F not found, resistance cannot be set</string>
+    <string name="log_v2_sport_type">8802 device type=%1$d sub type=%2$d (%3$s)</string>
+    <string name="err_no_880f">No 0x880F, cannot set resistance</string>
+    <string name="log_v2_no_start">8801 does not ask for start/stop commands (mode=%1$d); not sent, same as the official app</string>
+    <string name="log_v2_no_unlock">No 0x88FF unlock characteristic, sending directly</string>
+    <string name="log_v2_unlock">Sending write unlock 11 82 07 -> 0x88FF</string>
+    <string name="log_v2_unlock_failed">Unlock write failed; sending the command anyway (unlock is retried next time)</string>
+    <string name="log_v2_error">88E1 device error: %1$s</string>
+
+    <!-- Log: 1.0 box -->
+    <string name="warn_no_ffe3">Warning: write characteristic FFE3 not found, resistance cannot be set</string>
+    <string name="log_v1_frame">Status frame: type=%1$d sub type=%2$d (%3$s) raw=%4$s</string>
+    <string name="log_v1_sending_queued">Status frame received, sending queued level %1$d</string>
+    <string name="err_no_ffe3">No FFE3, cannot set resistance</string>
+    <string name="log_v1_queued">No status frame yet; level %1$d will be sent when one arrives (pedal to wake the box)</string>
+
+    <!-- Log: HuanTong -->
+    <string name="log_ht_no_fff1">No FFF1 notify characteristic, starting the keep-alive directly</string>
+    <string name="log_ht_fff1_failed">FFF1 subscription failed, starting the keep-alive anyway</string>
+    <string name="log_ht_no_fff2">No FFF2 write characteristic, resistance cannot be controlled</string>
+    <string name="log_ht_weight">Sending weight %1$d kg</string>
+
+    <!-- Log: FTMS -->
+    <string name="warn_no_2ad9">Warning: no 0x2AD9 control point, resistance cannot be set</string>
+    <string name="log_ftms_request_control">Requesting control 00 -> 0x2AD9</string>
+    <string name="log_ftms_no_target">Note: the machine does not declare resistance target support; sending anyway</string>
+    <string name="log_ftms_range_raw">2AD6 resistance range: %1$s</string>
+    <string name="log_ftms_range_integer">2AD6 looks like whole levels, using the raw values</string>
+    <string name="err_no_2ad9">No 0x2AD9, cannot set resistance</string>
+    <string name="log_ftms_truncated">Level %1$d × 10 does not fit in one byte, truncated to 25.5; switch to SINT16 encoding for higher levels</string>
+    <string name="log_ftms_training_status">Training status: %1$d</string>
+    <string name="ftms_result_1">success</string>
+    <string name="ftms_result_2">op code not supported</string>
+    <string name="ftms_result_3">invalid parameter</string>
+    <string name="ftms_result_4">operation failed</string>
+    <string name="ftms_result_5">control not permitted</string>
+    <string name="ftms_result_n">result %1$d</string>
+    <string name="log_ftms_response">2AD9 response: op 0x%1$02X -> %2$s</string>
+    <string name="log_ftms_retry">Requesting control again and resending</string>
+    <string name="log_ftms_target_ack">Machine confirmed target resistance %1$.1f</string>
+    <string name="log_ftms_control_lost">The machine revoked control; it is requested again on the next change</string>
+    <string name="log_ftms_status">2ADA status: %1$s</string>
+    <string name="log_ftms_flag_size">2ACE flags size adjusted to %1$d bytes from the payload</string>
+
+    <!-- Log: demo -->
+    <string name="log_demo_started">Demo mode started: simulated cadence, heart rate and resistance read-back, no Bluetooth</string>
+
+    <!-- Log: workout -->
+    <string name="log_workout_started">Workout started</string>
+    <string name="log_workout_paused">Workout paused</string>
+    <string name="log_workout_resumed">Workout resumed</string>
+    <string name="log_workout_finished">Workout finished: %1$d s, %2$.0f m, %3$.1f kcal</string>
+    <string name="log_auto_start">Pedalling detected, timer started automatically</string>
+    <string name="log_auto_resume">Pedalling again, timer resumed</string>
+    <string name="log_disconnect_pause">Device disconnected, workout auto-paused</string>
+    <string name="log_idle_pause">No pedalling for %1$d s, auto-paused</string>
 </resources>

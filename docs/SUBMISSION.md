@@ -58,20 +58,18 @@ and hooks, and drove the Android implementation. See `docs/KIRO_USAGE.md`.
 ### What's next
 
 - Test on more Mobi models with other owners, using the copyable GATT log.
-- English UI strings.
 - A foreground service so the HuanTong keep-alive survives the screen turning off.
 
 ## Testing instructions (judges)
 
 1. Download the APK from the release link and install it (Android 8.0+). Allow installing from unknown sources if asked.
-2. Tap **演示模式 Demo（无需设备）**. No Bluetooth permission or hardware is needed.
-3. The workout starts within 1–2 s. Use **+ / −** under **阻力** (resistance). The machine-feedback number follows after ~300 ms, cadence drops at higher levels and heart rate rises.
-4. In the **演示模式** card, switch off **正在踩动** (pedalling). Cadence goes to 0. After the auto-pause time (default 60 s; **设置 → 停止踩动多少秒后自动暂停**) the workout pauses.
-5. Tap **结束** (finish). The workout appears in **锻炼记录** (history).
-6. Optional: expand **日志与调试** (log & debug) to see the event log.
+2. Tap **Demo mode (no device needed)**. No Bluetooth permission or hardware is needed.
+3. The workout starts within 1–2 s. Use **+ / −** under **Resistance**. The "Machine feedback" number follows after ~300 ms, cadence drops at higher levels and heart rate rises.
+4. In the **Demo mode** card, switch off **Pedalling**. Cadence goes to 0. After the auto-pause time (default 60 s; **Settings → Seconds without pedalling before auto-pause**) the workout pauses.
+5. Tap **Finish**. The workout appears in **Workout history**.
+6. Optional: expand **Log & debug** to see the event log.
 
-UI glossary: 阻力 resistance · 本次锻炼 this workout · 里程 distance · 热量 calories · 心率 heart rate ·
-踏频 cadence · 扫描设备 scan · 设置 settings · 开始/暂停/继续/结束 start/pause/resume/finish.
+The app follows the phone language: English by default, Simplified Chinese on Chinese systems.
 
 ## Pre-existing code declaration
 
