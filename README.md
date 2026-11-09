@@ -86,7 +86,7 @@ app/src/main/java/com/keepgoing/elliptical/
 ├── model/                    state, settings
 └── ui/                       Jetpack Compose
 .kiro/                        specs, steering and hooks used to build this with Kiro
-docs/                         protocol analysis (zh/en), Kiro usage write-up, submission text
+docs/                         protocol analysis (zh/en), Kiro usage write-up
 ```
 
 ## Built with Kiro

@@ -8,7 +8,7 @@ app/src/main/java/com/keepgoing/elliptical/
   workout/                  WorkoutTracker (1 Hz loop), CalorieModel (official formulas)
   model/                    MachineState, settings, enums
   ui/                       Compose screens and theme
-docs/                       PROTOCOL.md (zh), PROTOCOL.en.md (en), KIRO_USAGE.md, SUBMISSION.md
+docs/                       PROTOCOL.md (zh), PROTOCOL.en.md (en), KIRO_USAGE.md
 .kiro/                      specs, steering, hooks
 ```
 
