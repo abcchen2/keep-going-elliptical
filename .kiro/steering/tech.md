@@ -24,3 +24,10 @@ APK: `app/build/outputs/apk/debug/app-debug.apk`.
 - Keep the characteristic's default write type (official app behaviour via FastBle).
 - Request MTU 128 after service discovery, before protocol setup.
 - Protocols publish raw readings into `MachineState`; they never accumulate totals.
+
+## iOS
+- Swift 5 language mode, SwiftUI, CoreBluetooth, iOS 16+, no third-party packages. Built only in
+  CI (Xcode 26 on `macos-26`); there is no local Mac or Swift compiler.
+- Everything runs on the main queue (central created with `queue: .main`), mirroring Android.
+- Build errors are reported as GitHub annotations (xcbeautify `--renderer github-actions`), readable
+  without login: `GET /repos/abcchen2/keep-going-elliptical/check-runs/{job_id}/annotations`.

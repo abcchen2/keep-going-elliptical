@@ -10,3 +10,12 @@
 .cxx
 *.apk
 !/release/*.apk
+
+# iOS: project and strings are generated (ios/project.yml, scripts/gen-ios-strings.ps1)
+/ios/*.xcodeproj/
+/ios/build/
+/ios/*.log
+/ios/KeepGoing/Resources/*.lproj/
+*.ipa
+/Payload/
+xcuserdata/

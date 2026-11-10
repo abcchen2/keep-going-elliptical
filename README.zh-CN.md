@@ -59,6 +59,19 @@ $env:JAVA_HOME="C:\Program Files\jdk17"
 
 最低支持 Android 8.0 (API 26)。Android 11 及以下扫描蓝牙需要定位权限，并且要打开系统定位开关。
 
+## iOS（自签自用）
+
+`ios/` 里是原生 SwiftUI 版（spec：`.kiro/specs/ios-app`）：连接、四种控制盒的阻力控制、锻炼统计、锻炼记录、演示模式和日志。暂时没有设置页，参数用安卓的默认值（体重 60 kg、官方新热量公式、停止踩动 60 秒自动暂停）。
+
+不需要 Mac。`.github/workflows/ios.yml` 在 GitHub 的 Mac 机器上编译出**未签名**的 IPA（构建产物 `keep-going-elliptical-ipa`；推送 `v*` 标签时附在 Release 里）。用免费 Apple ID 装到自己的 iPhone：
+
+1. Windows 上安装 [Sideloadly](https://sideloadly.io/)，以及 **Apple 官网下载**的 iTunes 和 iCloud（Microsoft Store 版本不行）。
+2. 用数据线连接 iPhone 并信任电脑，把 `keep-going-elliptical-unsigned.ipa` 拖进 Sideloadly，填 Apple ID 后开始安装。
+3. iPhone 上：设置 → 隐私与安全性 → 打开**开发者模式**（需要重启）；再到 设置 → 通用 → VPN 与设备管理，信任你的 Apple ID。
+4. 免费 Apple ID 的签名 7 天后失效（最多 3 个自签应用）。到期前用 Sideloadly 重新签名即可，应用和数据都保留。
+
+第一版的限制：请让 App 保持在前台。锁屏后 iOS 会挂起 App，环通主板的每秒心跳会停，连接也可能断开。Xcode 工程和 `.strings` 文件在 CI 里由 `ios/project.yml` 和安卓的 `strings.xml` 生成（`scripts/gen-ios-strings.ps1`）。
+
 ## 代码结构
 
 ```
@@ -79,6 +92,7 @@ app/src/main/java/com/keepgoing/elliptical/
 ├── workout/                  锻炼统计（1Hz 累加）、官方热量公式
 ├── model/                    状态与设置
 └── ui/                       Compose 界面
+ios/KeepGoing/                SwiftUI 版，文件名与 Kotlin 一一对应（Ble/、Protocol/、Workout/、UI/）
 .kiro/                        Kiro 的 specs、steering、hooks
 ```
 

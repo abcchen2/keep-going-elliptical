@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Default (English). Chinese translation: values-zh/strings.xml. Keep both files in the same order. -->
-<resources>
+<!-- Default (English). Chinese translation: values-zh/strings.xml. Keep both files in the same order.
+     The iOS app (ios/) uses these files too: scripts/gen-ios-strings.ps1 converts them. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Keep Going Elliptical</string>
     <string name="app_subtitle">Control Mobi ellipticals directly over Bluetooth, no login needed</string>
+
+    <!-- Bottom navigation -->
+    <string name="tab_workout">Workout</string>
+    <string name="tab_history">History</string>
+    <string name="tab_settings">Settings</string>
 
     <!-- Connection phase -->
     <string name="phase_idle">Not connected</string>
@@ -134,8 +140,8 @@
     <!-- Main screen: history -->
     <string name="card_history">Workout history</string>
     <string name="history_line">%1$s  %2$s  %3$s  %4$.0f kcal</string>
+    <string name="history_empty">No workouts yet. Finished workouts show up here.</string>
     <string name="action_collapse">Collapse</string>
-    <string name="action_show_all">Show all %1$d</string>
     <string name="action_clear_history">Clear history</string>
 
     <!-- Main screen: connect -->
@@ -151,7 +157,6 @@
 
     <!-- Main screen: settings -->
     <string name="card_settings">Settings</string>
-    <string name="action_expand_settings">Expand (protocol, weight, calories, max resistance)</string>
     <string name="settings_protocol">Protocol (applies on connect)</string>
     <string name="settings_ftms_encoding">FTMS resistance encoding</string>
     <string name="settings_calorie_algorithm">Calorie formula (used when the machine does not report calories)</string>
@@ -284,4 +289,10 @@
     <string name="log_auto_resume">Pedalling again, timer resumed</string>
     <string name="log_disconnect_pause">Device disconnected, workout auto-paused</string>
     <string name="log_idle_pause">No pedalling for %1$d s, auto-paused</string>
+
+    <!-- iOS only (ios/), unused on Android -->
+    <string name="ios_bt_usage" tools:ignore="UnusedResources">Connects to your Mobi elliptical over Bluetooth to set the resistance and read workout data.</string>
+    <string name="ios_open_settings" tools:ignore="UnusedResources">Open Settings</string>
+    <string name="ios_unknown_peripheral" tools:ignore="UnusedResources">iOS no longer knows the last device, scanning instead. Tap it in the list.</string>
+    <string name="ios_connect_timeout" tools:ignore="UnusedResources">No answer from the device within 15 s</string>
 </resources>

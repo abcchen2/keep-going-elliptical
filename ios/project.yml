@@ -1,0 +1,34 @@
+# XcodeGen spec. The .xcodeproj is generated from this file in CI (.github/workflows/ios.yml),
+# so no Mac is needed to add or rename source files: everything under KeepGoing/ is included.
+# Run scripts/gen-ios-strings.ps1 first; it writes KeepGoing/Resources/*.lproj.
+name: KeepGoing
+options:
+  bundleIdPrefix: com.keepgoing
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: en
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  KeepGoing:
+    type: application
+    platform: iOS
+    sources:
+      - path: KeepGoing
+    settings:
+      base:
+        PRODUCT_NAME: KeepGoing
+        PRODUCT_BUNDLE_IDENTIFIER: com.keepgoing.elliptical
+        INFOPLIST_FILE: KeepGoing/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_PREVIEWS: NO
+        # Unsigned build; Sideloadly signs the IPA with the owner's Apple ID at install time.
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGN_IDENTITY: ""
+    scheme: {}

@@ -75,6 +75,29 @@ $env:JAVA_HOME="C:\Program Files\jdk17"; .\gradlew.bat assembleDebug   # Windows
 APK: `app/build/outputs/apk/debug/app-debug.apk`. CI (`.github/workflows/android.yml`) builds every
 push; pushing a `v*` tag publishes the APK as a release.
 
+## iOS (personal sideload)
+
+`ios/` holds a native SwiftUI port (spec: `.kiro/specs/ios-app`): connect, resistance control for all
+four boxes, workout tracking, history, demo mode and the log. There is no settings screen yet; it uses
+the Android defaults (60 kg, official new calorie formula, auto-pause after 60 s).
+
+No Mac is needed. `.github/workflows/ios.yml` builds an **unsigned** IPA on a GitHub-hosted Mac
+(artifact `keep-going-elliptical-ipa`; attached to the release on `v*` tags). To install it on your
+own iPhone with a free Apple ID:
+
+1. On Windows, install [Sideloadly](https://sideloadly.io/) plus iTunes and iCloud **from apple.com**
+   (not the Microsoft Store versions).
+2. Connect the iPhone by USB, trust the computer, drop `keep-going-elliptical-unsigned.ipa` into
+   Sideloadly, enter your Apple ID and start.
+3. On the iPhone: Settings → Privacy & Security → **Developer Mode** on (restart), then
+   Settings → General → VPN & Device Management → trust your Apple ID.
+4. A free Apple ID signature lasts 7 days (max. 3 sideloaded apps). Re-sign with Sideloadly before it
+   expires; the app and its data stay.
+
+Limits of v1: keep the app in the foreground. iOS suspends it when the screen locks, which stops the
+HuanTong 1 Hz keep-alive and may drop the connection. The project file and the `.strings` files are
+generated in CI from `ios/project.yml` and the Android `strings.xml` (`scripts/gen-ios-strings.ps1`).
+
 ## Project layout
 
 ```
@@ -85,6 +108,7 @@ app/src/main/java/com/keepgoing/elliptical/
 ├── workout/                  WorkoutTracker (1 Hz loop), CalorieModel (official formulas)
 ├── model/                    state, settings
 └── ui/                       Jetpack Compose
+ios/KeepGoing/                SwiftUI port, same file names as the Kotlin code (Ble/, Protocol/, Workout/, UI/)
 .kiro/                        specs, steering and hooks used to build this with Kiro
 docs/                         protocol analysis (zh/en), Kiro usage write-up
 ```

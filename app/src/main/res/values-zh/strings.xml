@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 中文。默认（英文）在 values/strings.xml，两份文件保持同样的顺序。 -->
-<resources>
+<!-- 中文。默认（英文）在 values/strings.xml，两份文件保持同样的顺序。
+     iOS 版（ios/）也使用这两份文件，由 scripts/gen-ios-strings.ps1 转换。 -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">椭圆机续命</string>
     <string name="app_subtitle">Keep Going Elliptical · 无需登录，直连莫比 (Mobi) 椭圆机调阻力</string>
+
+    <!-- 底部导航 -->
+    <string name="tab_workout">运动</string>
+    <string name="tab_history">记录</string>
+    <string name="tab_settings">设置</string>
 
     <!-- 连接状态 -->
     <string name="phase_idle">未连接</string>
@@ -132,8 +138,8 @@
     <!-- 主界面：锻炼记录 -->
     <string name="card_history">锻炼记录</string>
     <string name="history_line">%1$s  %2$s  %3$s  %4$.0f 千卡</string>
+    <string name="history_empty">还没有锻炼记录。结束一次锻炼后会显示在这里。</string>
     <string name="action_collapse">收起</string>
-    <string name="action_show_all">全部 %1$d 条</string>
     <string name="action_clear_history">清空记录</string>
 
     <!-- 主界面：连接 -->
@@ -149,7 +155,6 @@
 
     <!-- 主界面：设置 -->
     <string name="card_settings">设置</string>
-    <string name="action_expand_settings">展开（协议、体重、热量、最大阻力）</string>
     <string name="settings_protocol">协议（连接时生效）</string>
     <string name="settings_ftms_encoding">FTMS 阻力编码</string>
     <string name="settings_calorie_algorithm">热量算法（机器不上报热量时使用）</string>
@@ -282,4 +287,10 @@
     <string name="log_auto_resume">重新踩动，继续计时</string>
     <string name="log_disconnect_pause">设备断开，锻炼自动暂停</string>
     <string name="log_idle_pause">%1$d 秒没有踩动，自动暂停</string>
+
+    <!-- 仅 iOS（ios/）使用，安卓不用 -->
+    <string name="ios_bt_usage" tools:ignore="UnusedResources">通过蓝牙连接莫比椭圆机，用来调节阻力和读取运动数据。</string>
+    <string name="ios_open_settings" tools:ignore="UnusedResources">打开设置</string>
+    <string name="ios_unknown_peripheral" tools:ignore="UnusedResources">系统已不记得上次的设备，已改为扫描，请在列表中点选。</string>
+    <string name="ios_connect_timeout" tools:ignore="UnusedResources">设备 15 秒内没有响应</string>
 </resources>

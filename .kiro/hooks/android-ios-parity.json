@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Keep Android and iOS in sync",
+      "trigger": "PostFileSave",
+      "description": "When protocol, BLE or workout code changes on one platform, check the other platform still behaves the same.",
+      "matcher": "(protocol|Protocol|workout|Workout|ble|Ble)[\\\\/][^\\\\/]+\\.(kt|swift)$",
+      "action": {
+        "type": "agent",
+        "prompt": "A protocol, BLE or workout file was saved in app/ (Kotlin) or ios/ (Swift). The Android app is the reference and ios/KeepGoing mirrors it file by file (protocol/X.kt <-> Protocol/X.swift, workout/X.kt <-> Workout/X.swift, ble/X.kt <-> Ble/X.swift). Compare the saved file with its counterpart: byte formats, UUIDs, constants, timing values, detection order, accumulation rules and log keys. If the saved change is not mirrored, apply the same change to the other platform (keeping documented iOS platform differences such as no MTU request and peripheral identifiers instead of MAC addresses). If they already match, do nothing."
+      }
+    }
+  ]
+}
