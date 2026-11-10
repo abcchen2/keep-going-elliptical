@@ -1,5 +1,7 @@
 package com.keepgoing.elliptical.ui
 
+import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,22 +14,33 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -39,10 +52,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -51,6 +66,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,6 +86,13 @@ import com.keepgoing.elliptical.protocol.ResistanceTables
 import com.keepgoing.elliptical.workout.WorkoutTracker
 import kotlin.math.roundToInt
 
+/** Bottom navigation destinations. Workout is the start tab; Back from another tab returns to it. */
+private enum class Tab(@StringRes val labelRes: Int, val icon: ImageVector) {
+    WORKOUT(R.string.tab_workout, Icons.Filled.PlayArrow),
+    HISTORY(R.string.tab_history, Icons.Filled.DateRange),
+    SETTINGS(R.string.tab_settings, Icons.Filled.Settings),
+}
+
 @Composable
 fun MainScreen(controller: EllipticalController, withBluetooth: (() -> Unit) -> Unit) {
     val state by controller.state.collectAsStateWithLifecycle()
@@ -87,46 +110,147 @@ fun MainScreen(controller: EllipticalController, withBluetooth: (() -> Unit) -> 
 
     val inSession = state.phase != ConnectionPhase.IDLE && state.phase != ConnectionPhase.SCANNING
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .safeDrawingPadding(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item { Header() }
-        item { StatusCard(state, onDisconnect = { controller.disconnect() }) }
-        if (inSession || stats.status != WorkoutStatus.IDLE) {
-            item { WorkoutCard(stats, state, controller.workout) }
-            if (state.protocol == ProtocolKind.DEMO && inSession) {
-                item { DemoCard(controller) }
-            }
-        }
-        if (inSession) {
-            item { ResistanceCard(state, onSet = { controller.setResistance(it) }) }
-        } else {
-            item {
-                ConnectCard(
-                    scanning = state.phase == ConnectionPhase.SCANNING,
-                    lastName = controller.settings.lastDeviceName ?: controller.settings.lastDeviceAddress,
-                    onScan = { withBluetooth { controller.startScan() } },
-                    onStopScan = { controller.stopScan() },
-                    onConnectLast = { withBluetooth { controller.connectLast() } },
-                    // Demo mode needs no Bluetooth permission (spec demo-mode, req 1.2).
-                    onDemo = { controller.startDemo() },
-                )
-            }
-            items(devices, key = { it.address }) { d ->
-                DeviceRow(d, highlight = controller.likelyMachine(d)) {
-                    withBluetooth { controller.connect(d.address, d.name) }
+    var tab by rememberSaveable { mutableStateOf(Tab.WORKOUT) }
+    BackHandler(enabled = tab != Tab.WORKOUT) { tab = Tab.WORKOUT }
+    // One scroll state per tab so switching tabs keeps each tab's position.
+    val workoutList = rememberLazyListState()
+    val historyList = rememberLazyListState()
+    val settingsList = rememberLazyListState()
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = { BottomBar(tab, onSelect = { tab = it }) },
+    ) { padding ->
+        val modifier = Modifier.fillMaxSize().padding(padding)
+        when (tab) {
+            Tab.WORKOUT -> TabColumn(modifier, workoutList) {
+                if (inSession) {
+                    item { SessionBar(state, onDisconnect = { controller.disconnect() }) }
+                } else {
+                    item { Header() }
+                    item { StatusCard(state, onDisconnect = { controller.disconnect() }) }
+                }
+                if (inSession || stats.status != WorkoutStatus.IDLE) {
+                    item { WorkoutCard(stats, state, controller.workout) }
+                    if (state.protocol == ProtocolKind.DEMO && inSession) {
+                        item { DemoCard(controller) }
+                    }
+                }
+                if (inSession) {
+                    item { ResistanceCard(state, onSet = { controller.setResistance(it) }) }
+                } else {
+                    item {
+                        ConnectCard(
+                            scanning = state.phase == ConnectionPhase.SCANNING,
+                            lastName = controller.settings.lastDeviceName ?: controller.settings.lastDeviceAddress,
+                            onScan = { withBluetooth { controller.startScan() } },
+                            onStopScan = { controller.stopScan() },
+                            onConnectLast = { withBluetooth { controller.connectLast() } },
+                            // Demo mode needs no Bluetooth permission (spec demo-mode, req 1.2).
+                            onDemo = { controller.startDemo() },
+                        )
+                    }
+                    items(devices, key = { it.address }) { d ->
+                        DeviceRow(d, highlight = controller.likelyMachine(d)) {
+                            withBluetooth { controller.connect(d.address, d.name) }
+                        }
+                    }
                 }
             }
+            Tab.HISTORY -> TabColumn(modifier, historyList) {
+                item { HistoryHeader(hasRecords = history.isNotEmpty(), onClear = { controller.workout.clearHistory() }) }
+                items(history) { HistoryRow(it) }
+            }
+            Tab.SETTINGS -> TabColumn(modifier, settingsList) {
+                // Full device details (protocol, model, firmware, battery) live here while connected;
+                // the Workout tab only shows the compact session bar.
+                if (inSession) item { StatusCard(state, onDisconnect = { controller.disconnect() }) }
+                item { SettingsCard(controller) }
+                item { DebugCard(controller, logs, connected = state.phase == ConnectionPhase.READY) }
+            }
         }
-        if (history.isNotEmpty()) item { HistoryCard(history, onClear = { controller.workout.clearHistory() }) }
-        item { SettingsCard(controller) }
-        item { DebugCard(controller, logs, connected = state.phase == ConnectionPhase.READY) }
     }
+}
+
+@Composable
+private fun TabColumn(modifier: Modifier, listState: LazyListState, content: LazyListScope.() -> Unit) {
+    LazyColumn(
+        modifier = modifier,
+        state = listState,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        content = content,
+    )
+}
+
+@Composable
+private fun BottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
+        Tab.entries.forEach { t ->
+            NavigationBarItem(
+                selected = t == selected,
+                onClick = { onSelect(t) },
+                icon = { Icon(t.icon, contentDescription = null) },
+                label = { Text(stringResource(t.labelRes)) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    unselectedIconColor = Color.Gray,
+                    unselectedTextColor = Color.Gray,
+                ),
+            )
+        }
+    }
+}
+
+/** One-line connection status for the Workout tab while connected, so the metrics and resistance fit on screen. */
+@Composable
+private fun SessionBar(state: MachineState, onDisconnect: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Column(Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PhaseDot(state.phase)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(state.phase.labelRes), fontWeight = FontWeight.Medium)
+                state.deviceName?.let {
+                    Text(
+                        " · $it",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onDisconnect) { Text(stringResource(R.string.action_disconnect)) }
+            }
+            state.lastError?.let {
+                Text(
+                    stringResource(it),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhaseDot(phase: ConnectionPhase) {
+    val color = when (phase) {
+        ConnectionPhase.READY -> Color(0xFF2E7D32)
+        ConnectionPhase.IDLE -> Color.Gray
+        else -> Color(0xFFF9A825)
+    }
+    Box(Modifier.size(12.dp).background(color, RoundedCornerShape(6.dp)))
 }
 
 @Composable
@@ -160,12 +284,7 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
 private fun StatusCard(state: MachineState, onDisconnect: () -> Unit) {
     SectionCard(stringResource(R.string.card_status)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val color = when (state.phase) {
-                ConnectionPhase.READY -> Color(0xFF2E7D32)
-                ConnectionPhase.IDLE -> Color.Gray
-                else -> Color(0xFFF9A825)
-            }
-            Box(Modifier.size(12.dp).background(color, RoundedCornerShape(6.dp)))
+            PhaseDot(state.phase)
             Spacer(Modifier.width(8.dp))
             Text(stringResource(state.phase.labelRes), fontWeight = FontWeight.Medium)
             Spacer(Modifier.weight(1f))
@@ -353,42 +472,48 @@ private fun DemoCard(controller: EllipticalController) {
 }
 
 @Composable
-private fun HistoryCard(history: List<WorkoutRecord>, onClear: () -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    val fmt = remember { java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault()) }
-    SectionCard(stringResource(R.string.card_history)) {
-        val shown = if (expanded) history else history.take(3)
-        shown.forEach { r ->
-            Column {
-                Text(
-                    stringResource(
-                        R.string.history_line,
-                        fmt.format(java.util.Date(r.startedAt)),
-                        formatDuration(r.activeSec),
-                        formatDistance(r.distanceM),
-                        r.calories,
-                    ),
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    listOfNotNull(
-                        stringResource(R.string.stat_avg_rpm, r.avgRpm),
-                        stringResource(R.string.stat_avg_resistance, r.avgResistance),
-                        r.avgHeartRate?.let { stringResource(R.string.stat_avg_hr, it) },
-                        r.maxHeartRate?.let { stringResource(R.string.stat_max_hr, it) },
-                    ).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
-                )
-            }
+private fun HistoryHeader(hasRecords: Boolean, onClear: () -> Unit) {
+    Column {
+        Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.card_history), fontWeight = FontWeight.SemiBold, fontSize = 20.sp, modifier = Modifier.weight(1f))
+            if (hasRecords) TextButton(onClick = onClear) { Text(stringResource(R.string.action_clear_history)) }
         }
-        Row {
-            if (history.size > 3) {
-                TextButton(onClick = { expanded = !expanded }) {
-                    Text(if (expanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_show_all, history.size))
-                }
-            }
-            TextButton(onClick = onClear) { Text(stringResource(R.string.action_clear_history)) }
+        if (!hasRecords) {
+            Text(stringResource(R.string.history_empty), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        }
+    }
+}
+
+@Composable
+private fun HistoryRow(r: WorkoutRecord) {
+    val fmt = remember { java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault()) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                stringResource(
+                    R.string.history_line,
+                    fmt.format(java.util.Date(r.startedAt)),
+                    formatDuration(r.activeSec),
+                    formatDistance(r.distanceM),
+                    r.calories,
+                ),
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                listOfNotNull(
+                    stringResource(R.string.stat_avg_rpm, r.avgRpm),
+                    stringResource(R.string.stat_avg_resistance, r.avgResistance),
+                    r.avgHeartRate?.let { stringResource(R.string.stat_avg_hr, it) },
+                    r.maxHeartRate?.let { stringResource(R.string.stat_max_hr, it) },
+                ).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+            )
         }
     }
 }
@@ -460,14 +585,8 @@ private fun DeviceRow(d: FoundDevice, highlight: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun SettingsCard(controller: EllipticalController) {
-    var expanded by remember { mutableStateOf(false) }
     val s = controller.settings
     SectionCard(stringResource(R.string.card_settings)) {
-        TextButton(onClick = { expanded = !expanded }) {
-            Text(if (expanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_expand_settings))
-        }
-        if (!expanded) return@SectionCard
-
         var protocol by remember { mutableStateOf(s.protocolChoice) }
         Text(stringResource(R.string.settings_protocol), fontWeight = FontWeight.Medium)
         ProtocolChoice.entries.forEach { c ->
