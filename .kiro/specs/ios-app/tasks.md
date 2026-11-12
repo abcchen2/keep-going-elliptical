@@ -6,7 +6,7 @@
   - Run it on Windows and check escapes, format specifiers and key counts; Android build and lint still pass.
   - _Requirements: 7.2, 7.3_
 
-- [ ] 2. Project skeleton and CI (push early to prove the toolchain)
+- [x] 2. Project skeleton and CI (push early to prove the toolchain)
   - `ios/project.yml`, `Info.plist` (Bluetooth usage, iOS 16, en/zh localisations), `@main` app with three empty tabs.
   - `.github/workflows/ios.yml` producing the unsigned IPA artifact and release asset.
   - `.gitignore` for generated project, strings and build output.
@@ -43,7 +43,7 @@
   - Workout tab (header, status, connect card, device list, session bar, workout card, demo card, resistance card), History tab, Settings tab (device details + log + copy), screen kept awake.
   - _Requirements: 2.8, 3.5, 3.6, 5.2, 5.3, 5.4, 7.1, 7.4_
 
-- [ ] 10. Green CI build with the full app
+- [x] 10. Green CI build with the full app
   - Fix compile errors until the IPA artifact is produced.
   - _Requirements: 1.1_
 
