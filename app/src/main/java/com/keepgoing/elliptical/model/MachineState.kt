@@ -96,7 +96,11 @@ data class FoundDevice(
     val serviceHints: List<String>,
 )
 
-/** Calorie formula. Both are copied from SportStateMachineToolKt in the official app. */
+/**
+ * Calorie formula. Both are reimplemented in [com.keepgoing.elliptical.workout.CalorieModel]
+ * from the formulas and constants of SportStateMachineToolKt (official app 4.5.17), so totals
+ * match what owners saw in the official app. Documented in docs/PROTOCOL.en.md §7.
+ */
 enum class CalorieAlgorithm(@StringRes val labelRes: Int) {
     OFFICIAL_NEW(R.string.calorie_new),
     OFFICIAL_OLD(R.string.calorie_old),

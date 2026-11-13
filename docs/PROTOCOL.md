@@ -153,6 +153,10 @@ FFF2 ← 20 C1 LV 00 CS        CS = (0x20 + 0xC1 + LV) & 0xFF
 | 老算法 | `power/1000 + 体重/3600`。power 是 `exp(rpm/100)` 与 `exp(阻力×32/最大阻力/10)` 的二次曲面拟合；功率为 0 时热量为 0；椭圆机子类型 17 的功率 ×1.5 |
 | 新算法 | `(表[min(96, 96/最大阻力×阻力)]/1000 × rpm × 60 + 0.058264444 rpm² − 4.3285 rpm + 125.303 + 12(阻力−1)/7 × (rpm/20 − 1.8)) / 3600`（括号内是每小时热量） |
 
+公式中的“表”是 `calculateCalories(rpm, res)` 里的 97 项查找表（4.5.17
+`com/anytum/mobi/sportstatemachine/SportStateMachineToolKt.java`）。本项目在
+`workout/CalorieModel.kt`（`NEW_TABLE`）中保留了相同的数值，使计算结果与官方 App 一致。
+
 用 60 rpm、最大阻力 24 计算（每分钟热量）：
 
 | 阻力 | 新算法 | 老算法 |
