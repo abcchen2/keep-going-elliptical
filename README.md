@@ -99,7 +99,14 @@ with Kiro during the Kiroween 2026 submission period. Specs, steering and hooks 
 
 This is an independent interoperability project so owners can keep using hardware they bought.
 It is not affiliated with or endorsed by Mobi. The repository contains **no code, images or other
-assets from the official app**. Only protocol facts needed for interoperability are documented.
+assets from the official app**. All code was written for this project. It does contain facts and
+numeric data needed for compatibility, each documented with its source location in
+[docs/PROTOCOL.en.md](docs/PROTOCOL.en.md):
+- BLE UUIDs and command/data byte formats;
+- the per-model resistance ranges;
+- the coefficients and the 97-value lookup table of the official calorie formulas, so that
+  calories match what owners saw in the official app.
+
 The decompiled sources were used for analysis on the developer's machine and are not published.
 
 Licensed under the [MIT License](LICENSE).

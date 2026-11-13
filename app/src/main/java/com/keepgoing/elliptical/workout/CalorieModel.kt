@@ -90,7 +90,10 @@ object CalorieModel {
             (12.0 * (res - 1) / 7.0) * (rpm / 20.0 - 1.8)
     }
 
-    /** 97 entries, copied from the official app. */
+    /**
+     * 97 lookup values of the official "new" formula (SportStateMachineToolKt, 4.5.17).
+     * Numeric data kept as-is so results match the official app; see docs/PROTOCOL.en.md §7.
+     */
     private val NEW_TABLE = intArrayOf(
         71, 71, 71, 40, 41, 42, 43, 44, 45, 47,
         48, 49, 50, 51, 52, 54, 55, 56, 58, 60,

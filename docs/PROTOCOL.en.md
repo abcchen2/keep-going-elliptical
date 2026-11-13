@@ -174,6 +174,10 @@ Calorie formulas (`SportStateMachineToolKt`; switchable in the official settings
 | old | `power/1000 + weight/3600`. power is a quadratic surface fit in `exp(rpm/100)` and `exp(level×32/max/10)`; 0 kcal when power is 0; ×1.5 power for elliptical sub type 17 |
 | new | `(T[min(96, 96/max×level)]/1000 × rpm × 60 + 0.058264444 rpm² − 4.3285 rpm + 125.303 + 12(level−1)/7 × (rpm/20 − 1.8)) / 3600` (the bracket is kcal per hour) |
 
+`T` is a 97-value lookup table in `calculateCalories(rpm, res)` (4.5.17
+`com/anytum/mobi/sportstatemachine/SportStateMachineToolKt.java`). This app keeps the same values
+in `workout/CalorieModel.kt` (`NEW_TABLE`) so its totals match the official app.
+
 At 60 rpm with max level 24 (kcal per minute):
 
 | Level | new | old |
