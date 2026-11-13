@@ -61,7 +61,9 @@ enum FtmsResistanceEncoding: String, CaseIterable {
 
 enum WorkoutCommand { case start, pause, stop }
 
-/// Calorie formula. Both are copied from SportStateMachineToolKt in the official app.
+/// Calorie formula. Both are reimplemented in `CalorieModel` from the formulas and constants of
+/// SportStateMachineToolKt (official app 4.5.17), so totals match what owners saw in the official
+/// app. Documented in docs/PROTOCOL.en.md §7.
 enum CalorieAlgorithm: String, CaseIterable {
     case officialNew = "OFFICIAL_NEW", officialOld = "OFFICIAL_OLD"
 }
